@@ -47,7 +47,7 @@ import com.example.syncpassapp.feature.clases.ui.SessionScreen
 import com.example.syncpassapp.feature.asistencia.ui.StudentHomeScreen
 import com.example.syncpassapp.feature.asistencia.ui.StudentQuestionnaireScreen
 import com.example.syncpassapp.feature.clases.ui.TeacherHomeScreen
-import com.example.syncpassapp.core.designsystem.theme.DiscoTheme
+import com.example.syncpassapp.ui.theme.SyncPassAppTheme
 import com.example.syncpassapp.feature.auth.ui.SesionRestaurada
 import com.example.syncpassapp.feature.auth.ui.SesionViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            DiscoTheme {
+            SyncPassAppTheme {
                 AppNavegacion()
             }
         }

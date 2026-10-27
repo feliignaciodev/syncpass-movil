@@ -2,6 +2,7 @@
 
 import android.content.Context
 import com.example.syncpassapp.core.database.local.database.AppDatabase
+import com.example.syncpassapp.core.database.local.database.SyncPassDao
 import com.example.syncpassapp.core.database.local.database.UniversidadDao
 import dagger.Module
 import dagger.Provides
@@ -28,5 +29,11 @@ object DatabaseModule {
     ): UniversidadDao {
         return database.universidadDao()
     }
-}
 
+    @Provides
+    fun provideSyncPassDao(
+        database: AppDatabase
+    ): SyncPassDao {
+        return database.syncPassDao()
+    }
+}

@@ -29,12 +29,14 @@ class AuthRepository @Inject constructor(
             )
 
             val usuario = response.usuario
+            val decodedUserInfo = tokenDataStore.getUserInfo()
+
             val userInfo = UserInfo(
-                userId = usuario?.id?.toString(),
-                email = usuario?.email,
-                name = usuario?.nombre,
-                phone = null,
-                groups = usuario?.roles ?: emptyList()
+                userId = usuario?.id?.toString() ?: decodedUserInfo?.userId,
+                email = usuario?.email ?: decodedUserInfo?.email ?: username,
+                name = usuario?.nombre ?: decodedUserInfo?.name ?: username,
+                phone = decodedUserInfo?.phone,
+                groups = usuario?.roles?.ifEmpty { null } ?: decodedUserInfo?.groups ?: listOf("ESTUDIANTE")
             )
 
             Result.success(AuthResult(userInfo, response.token))

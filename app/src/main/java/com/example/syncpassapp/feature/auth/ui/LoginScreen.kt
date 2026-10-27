@@ -47,7 +47,7 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Disco",
+            text = "SyncPass",
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold
         )
