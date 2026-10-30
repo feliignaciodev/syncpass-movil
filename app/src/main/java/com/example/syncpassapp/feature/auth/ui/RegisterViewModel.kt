@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class RegisterUiState(
-    val username: String = "",
     val email: String = "",
     val password: String = "",
     val nombre: String = "",
@@ -31,7 +30,6 @@ class RegisterViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(RegisterUiState())
     val uiState: StateFlow<RegisterUiState> = _uiState.asStateFlow()
 
-    fun onUsernameChanged(value: String) { _uiState.update { it.copy(username = value, errorMessage = null) } }
     fun onEmailChanged(value: String) { _uiState.update { it.copy(email = value, errorMessage = null) } }
     fun onPasswordChanged(value: String) { _uiState.update { it.copy(password = value, errorMessage = null) } }
     fun onNombreChanged(value: String) { _uiState.update { it.copy(nombre = value, errorMessage = null) } }
@@ -39,8 +37,12 @@ class RegisterViewModel @Inject constructor(
 
     fun registrar(onSuccess: (String) -> Unit) {
         val state = _uiState.value
-        if (state.username.isBlank() || state.email.isBlank() || state.password.isBlank() || state.nombre.isBlank() || state.telefono.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "Todos los campos son obligatorios (incluyendo teléfono E.164).") }
+        if (state.email.isBlank() || state.password.isBlank() || state.nombre.isBlank() || state.telefono.isBlank()) {
+            _uiState.update { it.copy(errorMessage = "Todos los campos son obligatorios.") }
+            return
+        }
+        if (!state.telefono.trim().matches(Regex("^\\+[1-9]\\d{7,14}$"))) {
+            _uiState.update { it.copy(errorMessage = "El teléfono debe tener formato internacional E.164, por ejemplo +56912345678.") }
             return
         }
 
@@ -48,7 +50,6 @@ class RegisterViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             val result = authRepository.registrar(
                 RegistroRequest(
-                    username = state.username.trim(),
                     email = state.email.trim(),
                     password = state.password,
                     nombre = state.nombre.trim(),

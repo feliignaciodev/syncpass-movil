@@ -39,7 +39,7 @@ class AuthRepository @Inject constructor(
 
             val userInfo = UserInfo(
                 userId = usuario?.id?.toString() ?: decodedUserInfo?.userId,
-                email = usuario?.email ?: decodedUserInfo?.email ?: username,
+                email = decodedUserInfo?.email ?: username,
                 name = usuario?.nombre ?: decodedUserInfo?.name ?: username,
                 phone = decodedUserInfo?.phone,
                 groups = rolesFromUsuario.ifEmpty { decodedUserInfo?.groups ?: listOf("BENEFICIARIO") }
@@ -47,23 +47,7 @@ class AuthRepository @Inject constructor(
 
             Result.success(AuthResult(userInfo, token))
         } catch (e: Exception) {
-            // Fallback para modo demo / pruebas offline si el backend no está levantado
-            val lower = username.lowercase()
-            val isProf = lower.contains("profesor") || lower.contains("docente") || lower.contains("admin")
-            val roles = if (isProf) listOf("PROFESOR") else listOf("ESTUDIANTE")
-            
-            val mockToken = "mock_jwt_token_for_${username}"
-            tokenDataStore.saveTokens(mockToken, mockToken, mockToken)
-
-            val userInfo = UserInfo(
-                userId = "1",
-                email = username,
-                name = if (isProf) "Profesor Demo" else "Estudiante Demo",
-                phone = null,
-                groups = roles
-            )
-
-            Result.success(AuthResult(userInfo, mockToken))
+            Result.failure(e)
         }
     }
 

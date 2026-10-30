@@ -41,16 +41,6 @@ fun RegisterScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 OutlinedTextField(
-                    value = uiState.username,
-                    onValueChange = { viewModel.onUsernameChanged(it) },
-                    label = { Text("Nombre de Usuario") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                OutlinedTextField(
                     value = uiState.nombre,
                     onValueChange = { viewModel.onNombreChanged(it) },
                     label = { Text("Nombre Completo") },
