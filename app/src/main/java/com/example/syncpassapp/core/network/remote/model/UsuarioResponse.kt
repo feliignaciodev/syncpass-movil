@@ -5,6 +5,6 @@ data class UsuarioResponse(
     val username: String,
     val email: String,
     val nombre: String,
-    val activo: Boolean,
-    val roles: List<String>? = null
+    val rol: String?,
+    val activo: Boolean
 )

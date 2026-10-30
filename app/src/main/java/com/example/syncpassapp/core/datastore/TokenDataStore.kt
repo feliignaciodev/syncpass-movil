@@ -112,8 +112,14 @@ data class UserInfo(
     val phone: String?,
     val groups: List<String>
 ) {
-    val isAdmin: Boolean = groups.any { it.equals("administrador", ignoreCase = true) || it.equals("admin", ignoreCase = true) }
-    val isProfesor: Boolean = groups.any { it.equals("profesor", ignoreCase = true) || it.equals("coordinador", ignoreCase = true) || isAdmin }
-    val isEstudiante: Boolean = groups.any { it.equals("estudiante", ignoreCase = true) }
+    val isAdmin: Boolean = groups.any { 
+        it.equals("administrador", ignoreCase = true) || it.equals("admin", ignoreCase = true) 
+    }
+    val isProfesor: Boolean = groups.any { 
+        it.equals("coordinador", ignoreCase = true) || it.equals("profesor", ignoreCase = true) || isAdmin 
+    }
+    val isEstudiante: Boolean = groups.any { 
+        it.equals("beneficiario", ignoreCase = true) || it.equals("voluntario", ignoreCase = true) || it.equals("estudiante", ignoreCase = true) 
+    }
 }
 

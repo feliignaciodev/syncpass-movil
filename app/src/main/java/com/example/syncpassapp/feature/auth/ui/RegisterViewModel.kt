@@ -17,6 +17,7 @@ data class RegisterUiState(
     val email: String = "",
     val password: String = "",
     val nombre: String = "",
+    val telefono: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null
@@ -34,11 +35,12 @@ class RegisterViewModel @Inject constructor(
     fun onEmailChanged(value: String) { _uiState.update { it.copy(email = value, errorMessage = null) } }
     fun onPasswordChanged(value: String) { _uiState.update { it.copy(password = value, errorMessage = null) } }
     fun onNombreChanged(value: String) { _uiState.update { it.copy(nombre = value, errorMessage = null) } }
+    fun onTelefonoChanged(value: String) { _uiState.update { it.copy(telefono = value, errorMessage = null) } }
 
     fun registrar(onSuccess: (String) -> Unit) {
         val state = _uiState.value
-        if (state.username.isBlank() || state.email.isBlank() || state.password.isBlank() || state.nombre.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "Todos los campos son obligatorios.") }
+        if (state.username.isBlank() || state.email.isBlank() || state.password.isBlank() || state.nombre.isBlank() || state.telefono.isBlank()) {
+            _uiState.update { it.copy(errorMessage = "Todos los campos son obligatorios (incluyendo teléfono E.164).") }
             return
         }
 
@@ -49,7 +51,8 @@ class RegisterViewModel @Inject constructor(
                     username = state.username.trim(),
                     email = state.email.trim(),
                     password = state.password,
-                    nombre = state.nombre.trim()
+                    nombre = state.nombre.trim(),
+                    telefono = state.telefono.trim()
                 )
             )
 

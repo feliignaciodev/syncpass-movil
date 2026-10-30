@@ -29,7 +29,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "API_BASE_URL", "\"https://api.produccion.com/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://syncpass.duckdns.org/\"")
         }
         debug {
             buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")

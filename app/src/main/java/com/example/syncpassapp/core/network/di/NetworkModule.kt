@@ -29,8 +29,13 @@ object NetworkModule {
         tokenInterceptor: TokenInterceptor,
         tokenAuthenticator: TokenAuthenticator
     ): OkHttpClient {
-        val logging = HttpLoggingInterceptor()
-        logging.level = HttpLoggingInterceptor.Level.BODY
+        val logging = HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
+        }
 
         return OkHttpClient.Builder()
             .addInterceptor(logging)
