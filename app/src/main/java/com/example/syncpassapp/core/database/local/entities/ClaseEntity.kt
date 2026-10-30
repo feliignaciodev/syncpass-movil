@@ -25,6 +25,6 @@ data class ClaseEntity(
     val nombre: String,
     val descripcion: String,
     val profesorId: Long, // ID del usuario que imparte la clase como profesor
-    val cuestionarioEstructuraJson: String // Estructura/preguntas del cuestionario para esta clase en JSON
+    val cuestionarioEstructuraJson: String, // Estructura/preguntas del cuestionario para esta clase en JSON
+    val estado: String = "EN_CURSO" // "EN_CURSO" o "FINALIZADO"
 )
-
