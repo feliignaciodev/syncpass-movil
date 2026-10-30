@@ -40,6 +40,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.syncpassapp.core.common.navigation.Destino
 import com.example.syncpassapp.core.common.navigation.*
 import com.example.syncpassapp.feature.auth.ui.LoginScreen
+import com.example.syncpassapp.feature.auth.ui.RegisterScreen
 import com.example.syncpassapp.feature.perfil.ui.ProfileScreen
 import com.example.syncpassapp.feature.clases.ui.SessionDetailScreen
 import com.example.syncpassapp.feature.clases.ui.SessionEditScreen
@@ -203,7 +204,16 @@ private fun AppNavegacionInterna(
                         navController.navigate(Destino.InicioEstudiante.crearRuta(estudianteId)) {
                             popUpTo(Destino.Login.patron) { inclusive = true }
                         }
+                    },
+                    onNavigateToRegister = {
+                        navController.navigate(Destino.Registro.patron)
                     }
+                )
+            }
+
+            composableDestino(Destino.Registro) {
+                RegisterScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 

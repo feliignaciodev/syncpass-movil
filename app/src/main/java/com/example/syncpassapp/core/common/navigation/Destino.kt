@@ -76,6 +76,8 @@ sealed class Destino(
 
     data object Login : Destino("login")
 
+    data object Registro : Destino("register")
+
     data object InicioProfesor : Destino(
         base = "teacher_home",
         argumentos = listOf(ArgumentoRuta("profesorId", NavType.LongType))

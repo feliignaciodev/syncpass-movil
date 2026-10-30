@@ -16,6 +16,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,7 +36,8 @@ import com.example.syncpassapp.feature.auth.ui.LoginViewModel
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
     onLoginProfesor: (Long) -> Unit,
-    onLoginEstudiante: (Long) -> Unit
+    onLoginEstudiante: (Long) -> Unit,
+    onNavigateToRegister: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -72,7 +74,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = uiState.emailInput,
                     onValueChange = { viewModel.onEmailChanged(it) },
-                    label = { Text("Correo Electr\u00F3nico") },
+                    label = { Text("Correo o Usuario") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
@@ -86,7 +88,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = uiState.passwordInput,
                     onValueChange = { viewModel.onPasswordChanged(it) },
-                    label = { Text("Contrase\u00F1a") },
+                    label = { Text("Contraseña") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
@@ -120,6 +122,30 @@ fun LoginScreen(
                     ) {
                         Text("Ingresar", fontSize = 16.sp)
                     }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.loginDemoProfesor(onLoginProfesor, onLoginEstudiante)
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Demo Profesor", fontSize = 12.sp)
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.loginDemoEstudiante(onLoginProfesor, onLoginEstudiante)
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Demo Alumno", fontSize = 12.sp)
+                        }
+                    }
                 }
 
                 uiState.errorMessage?.let { error ->
@@ -129,6 +155,12 @@ fun LoginScreen(
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium
                     )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                TextButton(onClick = onNavigateToRegister) {
+                    Text("¿No tienes cuenta? Regístrate")
                 }
             }
         }

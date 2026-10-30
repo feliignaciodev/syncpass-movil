@@ -46,6 +46,22 @@ class LoginViewModel @Inject constructor(
         _uiState.update { it.copy(passwordInput = newPassword, errorMessage = null) }
     }
 
+    fun loginDemoProfesor(
+        onSuccessProfesor: (Long) -> Unit,
+        onSuccessEstudiante: (Long) -> Unit
+    ) {
+        _uiState.update { it.copy(emailInput = "profesor@syncpass.com", passwordInput = "password123") }
+        login(onSuccessProfesor, onSuccessEstudiante)
+    }
+
+    fun loginDemoEstudiante(
+        onSuccessProfesor: (Long) -> Unit,
+        onSuccessEstudiante: (Long) -> Unit
+    ) {
+        _uiState.update { it.copy(emailInput = "estudiante@syncpass.com", passwordInput = "password123") }
+        login(onSuccessProfesor, onSuccessEstudiante)
+    }
+
     fun login(
         onSuccessProfesor: (Long) -> Unit,
         onSuccessEstudiante: (Long) -> Unit
