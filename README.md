@@ -38,8 +38,8 @@ Aplicación móvil desarrollada en **Jetpack Compose (Material 3)** bajo arquite
    *(Disponible en `http://localhost:8080`).*
 
 ### B. App Móvil (`SyncPassApp`)
-1. La URL base está configurada en [`app/build.gradle.kts`](file:///C:/Src/SyncPassApp/app/build.gradle.kts):
+1. Las variantes debug y release usan la API desplegada:
    ```kotlin
-   buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")
+   buildConfigField("String", "API_BASE_URL", "\"https://syncpass.duckdns.org/\"")
    ```
-2. Sincroniza Gradle en Android Studio y ejecuta la app en tu emulador o dispositivo físico.
+2. Sincroniza Gradle en Android Studio, recompila e instala la app en tu emulador o dispositivo físico.

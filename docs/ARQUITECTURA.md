@@ -699,16 +699,15 @@ OkHttpClient.Builder()
     .build()
 
 Retrofit.Builder()
-    .baseUrl(BuildConfig.API_BASE_URL)   // http://10.0.2.2:8080/ en debug
+    .baseUrl(BuildConfig.API_BASE_URL)   // https://syncpass.duckdns.org/
     .client(okHttpClient)
     .addConverterFactory(GsonConverterFactory.create())
     .build()
 ```
 
 - `API_BASE_URL` se define en `app/build.gradle.kts` como
-  `buildConfigField`, distinto por `buildType` (debug:
-  `http://10.0.2.2:8080/`, apunta al host del emulador; release:
-  `https://api.produccion.com/`).
+  `buildConfigField` para debug y release:
+  `https://syncpass.duckdns.org/`.
 - `AuthApi` se obtiene de `retrofit.create(AuthApi::class.java)`.
 - `provideOkHttpClient` recibe un `@ApplicationContext Context`.
 
@@ -1430,23 +1429,21 @@ app/build/outputs/apk/debug/app-debug.apk
 
 ## 13. Configuración de la URL de la API
 
-La URL base se define en `app/build.gradle.kts` como `buildConfigField`:
+La URL base de debug y release se define en `app/build.gradle.kts`:
 
 ```kotlin
-buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")
+buildConfigField("String", "API_BASE_URL", "\"https://syncpass.duckdns.org/\"")
 ```
 
 Escenarios:
 
 | Entorno | URL | Nota |
 |---|---|---|
-| Emulador → API en el host | `http://10.0.2.2:8080/` | `10.0.2.2` es el localhost del host desde el emulador. |
-| Dispositivo físico → API local | `http://<IP-LAN>:8080/` | o `adb reverse tcp:8080 tcp:8080` y luego `http://localhost:8080/`. |
-| Production | `https://api.produccion.com/` | Definida en `buildTypes.release`. |
+| Emulador o dispositivo físico | `https://syncpass.duckdns.org/` | API desplegada en EC2 con HTTPS. |
+| Desarrollo local | `http://10.0.2.2:8080/` | Solo si el backend se ejecuta en el host del emulador. |
 
-> **Requisito HTTPS:** a partir de SDK 9+ las URLs `http://` requieren
-> configuración de `cleartextTrafficPermitted`/network security config si se
-> sale del entorno de debug. Hoy solo debug apunta a HTTP.
+> Para usar la API local, configura temporalmente la URL debug en
+> `app/build.gradle.kts`; la variante release debe permanecer en HTTPS.
 
 ---
 
