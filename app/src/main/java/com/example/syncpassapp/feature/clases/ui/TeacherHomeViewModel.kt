@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.syncpassapp.core.database.local.entities.ClaseEntity
 import com.example.syncpassapp.core.database.repository.UniversidadRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -60,7 +59,7 @@ class TeacherHomeViewModel @Inject constructor(
     }
 
     fun crearClase(nombre: String, descripcion: String, cuestionarioJson: String, estado: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val nuevaClase = ClaseEntity(
                 nombre = nombre,
                 descripcion = descripcion,

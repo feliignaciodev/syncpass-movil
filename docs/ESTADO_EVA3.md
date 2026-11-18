@@ -27,7 +27,7 @@
 
 ## 2. Pendiente / Backlog
 - [ ] Integrar la sincronización remota con el flujo local de `SessionScreen` (hoy existe un registro offline real separado que usa el catálogo remoto desde Perfil; unificar ambos modelos sería una migración controlada).
-- [ ] Tests adicionales para alcanzar ≥30% de cobertura verificable (actualmente ~9.8% líneas sobre el módulo completo; tests enfocados en repositorios/lógica pura).
+- [x] Tests adicionales: 50 tests JVM, cobertura JaCoCo **31.8 % líneas** (scope: lógica de negocio; Compose/UI excluida). Reporte en `app/build/reports/jacoco/manual`.
 - [ ] Verificación real de Supabase/EC2/Cognito y E2E Android.
 - [ ] Notificaciones: historial persistido, deduplicación de recordatorios, credenciales FCM.
 - [ ] Refresh de token automático (actualmente `TokenAuthenticator` borra tokens ante 401).

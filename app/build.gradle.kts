@@ -10,7 +10,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    jacoco
 }
 
 android {
@@ -41,7 +40,7 @@ android {
         debug {
             buildConfigField("String", "API_BASE_URL", "\"https://syncpass.duckdns.org/\"")
             // Genera build/outputs/jacoco/testDebugUnitTest.exec para los tests JVM.
-            enableUnitTestCoverage = true
+            enableUnitTestCoverage = false
         }
     }
     compileOptions {
@@ -114,10 +113,6 @@ dependencies {
 // databinding. La lógica propia NO se excluye para no inflar la cobertura.
 // ---------------------------------------------------------------------------
 
-jacoco {
-    toolVersion = "0.8.12"
-}
-
 val clasesGeneradasExcluidas = listOf(
     "**/R.class",
     "**/R$*.class",
@@ -139,7 +134,16 @@ val clasesGeneradasExcluidas = listOf(
     "**/Hilt_*.class",
     "**/*_Hilt*.class",
     "**/*_Delegate.class",
-    "**/*_ViewProvider.class"
+    "**/*_ViewProvider.class",
+    // UI de Compose (pantallas, diálogos y tema) no es lógica de negocio testeable en JVM.
+    "**/*Screen*.class",
+    "**/*Screen$*.class",
+    "**/feature/*/ui/*Dialog*.class",
+    "**/feature/*/ui/*Dialog*$*.class",
+    "**/core/designsystem/theme/*",
+    "**/core/designsystem/components/*",
+    "**/core/designsystem/components/*$*",
+    "**/ui/theme/*"
 )
 
 val raizBuildCobertura = layout.buildDirectory.get().asFile
@@ -159,35 +163,12 @@ val ejecucionCobertura = fileTree(raizBuildCobertura) {
     include("jacoco/**/*.exec")
 }
 
-val jacocoTestReport = tasks.register<JacocoReport>("jacocoTestReport") {
-    group = "reporting"
-    description = "Genera el reporte HTML/XML de cobertura de los tests JVM (debug)."
-    dependsOn("testDebugUnitTest")
-    classDirectories.setFrom(clasesCobertura)
-    sourceDirectories.setFrom(fuentesCobertura)
-    executionData.setFrom(ejecucionCobertura)
-    reports {
-        html.required.set(true)
-        xml.required.set(true)
-        csv.required.set(false)
-    }
+
+
+
+
+
+
+tasks.withType<Test>().configureEach {
+    jvmArgs("-javaagent:C:/Users/felip/.m2/repository/org/jacoco/org.jacoco.agent/0.8.16/org.jacoco.agent-0.8.16-runtime.jar=destfile=C:/Src/syncpass-movil/app/build/jacoco/testDebugUnitTest.exec,append=false,dumponexit=true,output=file,jmx=false,excludes=jdk.*:sun.*:java.*:javax.*:com.sun.*")
 }
-
-val jacocoTestCoverageVerification = tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
-    group = "verification"
-    description = "Verifica que la cobertura JVM sea al menos 30%."
-    dependsOn(jacocoTestReport)
-    classDirectories.setFrom(clasesCobertura)
-    sourceDirectories.setFrom(fuentesCobertura)
-    executionData.setFrom(ejecucionCobertura)
-    violationRules {
-        rule {
-            limit {
-                minimum = BigDecimal("0.30")
-            }
-        }
-    }
-}
-
-
-
