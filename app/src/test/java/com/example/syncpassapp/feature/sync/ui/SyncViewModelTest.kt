@@ -120,6 +120,39 @@ class SyncViewModelTest {
     }
 
     @Test
+    fun `registrar offline crea un pendiente con ids del catalogo y sin ubicacion`() = runTest {
+        observarUiState()
+
+        viewModel.registrarAsistenciaOffline(
+            eventoId = 99L,
+            participanteId = "P-0099",
+            tipoParticipante = "ESTUDIANTE"
+        )
+
+        val registradas = dao.getAsistenciasPendientes()
+        assertEquals(1, registradas.size)
+        val registro = registradas.single()
+        assertEquals(99L, registro.eventoId)
+        assertEquals("P-0099", registro.participanteId)
+        assertEquals("SIN_UBICACION", registro.estadoValidacion)
+        assertFalse(registro.sincronizado)
+        assertTrue(registro.uuid.isNotBlank())
+        assertEquals(1, viewModel.uiState.value.totalPendientes)
+    }
+
+    @Test
+    fun `descargar catalogo lo guarda localmente para el registro offline`() = runTest {
+        observarUiState()
+
+        viewModel.descargarCatalogo()
+
+        assertFalse(viewModel.uiState.value.isDownloading)
+        assertFalse(viewModel.uiState.value.esError)
+        assertEquals("Catálogo descargado correctamente.", viewModel.uiState.value.mensaje)
+        assertEquals(1, api.llamadasCatalogo)
+    }
+
+    @Test
     fun `error de red conserva pendientes y marca el estado de error`() = runTest {
         observarUiState()
         dao.insertAsistencia(asistencia("a1"))

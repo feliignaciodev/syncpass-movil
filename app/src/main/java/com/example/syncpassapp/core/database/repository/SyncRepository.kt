@@ -204,4 +204,9 @@ class SyncRepository @Inject constructor(
     suspend fun registrarEncuestaLocal(encuesta: EncuestaEntity) {
         syncPassDao.insertEncuesta(encuesta)
     }
+
+    /** Lectura del catálogo ya descargado (offline). No cambia esquema. */
+    fun obtenerEventosLocales(): Flow<List<EventoEntity>> = syncPassDao.getAllEventos()
+
+    fun obtenerParticipantesLocales(): Flow<List<ParticipanteEntity>> = syncPassDao.getAllParticipantes()
 }

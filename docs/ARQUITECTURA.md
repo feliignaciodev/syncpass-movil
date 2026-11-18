@@ -119,13 +119,13 @@ flowchart TB
 Login → Cognito (SRP) → access token en DataStore → restauración de sesión con `fetchAuthSession` → claims JWT (nombre, email, rol).
 
 ### 4.2 Offline-first (asistencias)
-1. Descargar catálogo (`/api/sync/catalogo`) → Room.
-2. Registrar asistencia localmente en `asistencias_offline` (`sincronizado = false`).
-3. Usuario pulsa **"Sincronizar pendientes"** → `SyncRepository.sincronizarPendientes()` → lotes a `/api/sync/asistencias` y `/api/sync/encuestas`.
-4. Aceptados/duplicados se marcan `sincronizado = true`; rechazados y errores de red permanecen pendientes.
+1. Desde Perfil, descargar catálogo (`/api/sync/catalogo`) → Room con eventos y participantes remotos.
+2. Desde **"Registrar asistencia offline"**, elegir evento y participante del catálogo y guardar en `asistencias_offline` con UUID y `sincronizado = false`. Como no hay geolocalización se usa `estadoValidacion = SIN_UBICACION` y coordenadas nulas (valores permitidos por el backend).
+3. El usuario puede pulsar **"Sincronizar pendientes"**; además, `SyncPassApplication` reintenta automáticamente cuando `ConnectivityManager.NetworkCallback` detecta recuperación de una red con internet validado.
+4. Se envían lotes a `/api/sync/asistencias` y `/api/sync/encuestas`. Los UUID aceptados y duplicados se marcan `sincronizado = true`; rechazados y errores de red permanecen pendientes para el siguiente reintento.
 
-### 4.3 Sincronización explícita
-Implementada en `feature/sync/ui/SyncViewModel` + sección en `ProfileScreen`. No se usa WorkManager (no requerido por la rúbrica); el mecanismo es un botón explícito.
+### 4.3 Sincronización explícita + automática
+La manual está implementada en `feature/sync/ui/SyncViewModel` + sección en `ProfileScreen`. La automática se registra en `SyncPassApplication`, sin modificar el esquema Room y sin duplicar sincronizaciones simultáneas en el proceso de aplicación. WorkManager queda como mejora futura para sincronizar también con la app cerrada.
 
 ## 5. APIs nativas utilizadas (≥2)
 1. **Cámara + escaneo QR:** CameraX + ML Kit Barcode + ZXing (permiso `CAMERA`, solicitud en runtime).

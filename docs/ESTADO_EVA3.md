@@ -14,7 +14,7 @@
 ### B. Aplicación Móvil Android
 - [x] Arquitectura MVVM en capas (Screens → ViewModels → Repositories → Room/Retrofit).
 - [x] Persistencia local Room + offline-first (asistencias/encuestas pendientes).
-- [x] Sincronización explícita con botón (`SyncViewModel` + sección en Perfil).
+- [x] Registro offline con evento/participante del catálogo y sincronización manual con botón (`SyncViewModel` + Perfil) y automática al recuperar red (`NetworkCallback` en la aplicación).
 - [x] Descarga de catálogo remoto.
 - [x] APIs nativas: cámara/QR (CameraX + ML Kit + ZXing) y notificaciones (ntfy/FCM parcial).
 - [ ] Geolocalización: **NO implementada** (declarada erróneamente como completa anteriormente).
@@ -26,7 +26,7 @@
 - [ ] `NOTIFICACIONES_NTFY.md`: restos `EOF`/`echo done` y nombres `Disco`/`com.rojas.disco` deben eliminarse (pendiente).
 
 ## 2. Pendiente / Backlog
-- [ ] Conectar la captura de asistencia de `SessionScreen` con `SyncRepository` sin migración de Room, o migración controlada para `remoteEventoId`/`remoteParticipanteId`.
+- [ ] Integrar la sincronización remota con el flujo local de `SessionScreen` (hoy existe un registro offline real separado que usa el catálogo remoto desde Perfil; unificar ambos modelos sería una migración controlada).
 - [ ] Tests adicionales para alcanzar ≥30% de cobertura verificable (actualmente ~9.8% líneas sobre el módulo completo; tests enfocados en repositorios/lógica pura).
 - [ ] Verificación real de Supabase/EC2/Cognito y E2E Android.
 - [ ] Notificaciones: historial persistido, deduplicación de recordatorios, credenciales FCM.

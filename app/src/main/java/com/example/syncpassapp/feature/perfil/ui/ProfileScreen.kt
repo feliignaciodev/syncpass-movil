@@ -35,6 +35,7 @@ import com.example.syncpassapp.core.designsystem.components.DialogMostrarQr
 import com.example.syncpassapp.core.designsystem.components.TarjetaSeccion
 import com.example.syncpassapp.feature.perfil.ui.ProfileViewModel
 import com.example.syncpassapp.feature.sync.ui.SyncViewModel
+import com.example.syncpassapp.feature.sync.ui.DialogRegistrarAsistenciaOffline
 
 @Composable
 fun ProfileScreen(
@@ -45,6 +46,7 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsState()
     val syncUiState by syncViewModel.uiState.collectAsState()
     var showDialogQrEstudiante by remember { mutableStateOf(false) }
+    var showDialogOffline by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -177,6 +179,44 @@ fun ProfileScreen(
                     style = MaterialTheme.typography.bodySmall
                 )
             }
+        }
+
+        OutlinedButton(
+            onClick = { showDialogOffline = true },
+            enabled = !syncUiState.sincronizando && !syncUiState.isDownloading,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Registrar asistencia offline")
+        }
+        OutlinedButton(
+            onClick = { syncViewModel.descargarCatalogo() },
+            enabled = !syncUiState.isDownloading && !syncUiState.sincronizando,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (syncUiState.isDownloading) "Descargando catálogo..." else "Descargar catálogo")
+        }
+
+        if (showDialogOffline) {
+            DialogRegistrarAsistenciaOffline(
+                eventos = syncUiState.eventos,
+                participantes = syncUiState.participantes,
+                onDismiss = { showDialogOffline = false },
+                onRegistrar = { eventoId, participanteId, tipo, lat, lon, dist, estado, inscrito, registradoPor, dispositivo ->
+                    syncViewModel.registrarAsistenciaOffline(
+                        eventoId = eventoId,
+                        participanteId = participanteId,
+                        tipoParticipante = tipo,
+                        latitud = lat,
+                        longitud = lon,
+                        distanciaMetros = dist,
+                        estadoValidacion = estado,
+                        inscritoEnSitio = inscrito,
+                        registradoPor = registradoPor,
+                        dispositivoId = dispositivo
+                    )
+                    showDialogOffline = false
+                }
+            )
         }
 
         if (showDialogQrEstudiante) {

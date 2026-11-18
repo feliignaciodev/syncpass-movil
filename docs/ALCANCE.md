@@ -26,7 +26,7 @@
 | RNF-01 | Lenguaje Kotlin íntegramente. |
 | RNF-02 | Arquitectura MVVM con separación de capas. |
 | RNF-03 | Persistencia local offline-first (Room). |
-| RNF-04 | Sincronización explícita (botón). |
+| RNF-04 | Sincronización explícita (botón) y reintento automático al recuperar red. |
 | RNF-05 | Al menos 2 APIs nativas (cámara/QR, notificaciones). |
 | RNF-06 | Pruebas unitarias + cobertura mínima 30% (JaCoCo). |
 | RNF-07 | Documentación C4 y alcance. |
@@ -45,8 +45,8 @@
 - Flujo: escanear QR de clase → marcar presente/ausente → guardar respuestas si presente.
 
 ### CU-04 Offline + sincronización
-- Precondición: catálogo descargado.
-- Flujo: registrar asistencia pendiente → estado `sincronizado=false` → recuperar conexión → pulsar "Sincronizar pendientes" → lotes al backend → aceptados/duplicados marcados, rechazados quedan pendientes.
+- Precondición: catálogo descargado desde Perfil.
+- Flujo: abrir "Registrar asistencia offline", elegir evento y participante remotos → guardar `sincronizado=false` con `estadoValidacion=SIN_UBICACION` → al recuperar internet se ejecuta la subida automática (`NetworkCallback`) o el usuario pulsa "Sincronizar pendientes" → lotes al backend → aceptados/duplicados marcados, rechazados quedan pendientes.
 
 ### CU-05 Descargar catálogo
 - Flujo: botón "Descargar catálogo" → GET /api/sync/catalogo → persistir proyectos/eventos/participantes/inscripciones en Room.
@@ -66,7 +66,7 @@
 | Cámara/QR | Implementado |
 | Notificaciones | Parcial |
 | Offline sync (infra + botón) | Implementado |
-| Offline sync conectado a captura de clases | **Backlog** (requiere migración Room o flujo con catálogo remoto) |
+| Registro offline con catálogo remoto + botón/reintento automático | Implementado (no reemplaza el modelo local de clases; sin migración Room) |
 | Geolocalización | Backlog |
 | C4 / alcance / mockups | Implementado (este directorio) |
 | Tests + JaCoCo ≥30% | Parcial (36 tests, reporte disponible) |

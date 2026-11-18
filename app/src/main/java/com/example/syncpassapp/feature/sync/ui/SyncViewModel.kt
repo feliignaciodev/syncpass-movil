@@ -3,6 +3,8 @@ package com.example.syncpassapp.feature.sync.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.syncpassapp.core.database.local.entities.AsistenciaEntity
+import com.example.syncpassapp.core.database.local.entities.EventoEntity
+import com.example.syncpassapp.core.database.local.entities.ParticipanteEntity
 import com.example.syncpassapp.core.database.repository.ResumenSync
 import com.example.syncpassapp.core.database.repository.SyncRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,7 +29,9 @@ data class SyncUiState(
     val esError: Boolean = false,
     val aceptados: Int = 0,
     val duplicados: Int = 0,
-    val rechazados: Int = 0
+    val rechazados: Int = 0,
+    val eventos: List<EventoEntity> = emptyList(),
+    val participantes: List<ParticipanteEntity> = emptyList()
 ) {
     val totalPendientes: Int get() = pendientesAsistencias + pendientesEncuestas
 }
@@ -49,6 +53,16 @@ class SyncViewModel @Inject constructor(
         viewModelScope.launch {
             syncRepository.encuestasPendientes.collectLatest { count ->
                 _uiState.value = _uiState.value.copy(pendientesEncuestas = count)
+            }
+        }
+        viewModelScope.launch {
+            syncRepository.obtenerEventosLocales().collectLatest { lista ->
+                _uiState.value = _uiState.value.copy(eventos = lista)
+            }
+        }
+        viewModelScope.launch {
+            syncRepository.obtenerParticipantesLocales().collectLatest { lista ->
+                _uiState.value = _uiState.value.copy(participantes = lista)
             }
         }
     }
@@ -111,7 +125,7 @@ class SyncViewModel @Inject constructor(
         latitud: Double? = null,
         longitud: Double? = null,
         distanciaMetros: Double? = null,
-        estadoValidacion: String = "VALIDO",
+        estadoValidacion: String = "SIN_UBICACION",
         inscritoEnSitio: Boolean = false,
         registradoPor: Long? = null,
         dispositivoId: String? = null

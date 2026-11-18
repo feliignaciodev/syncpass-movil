@@ -22,7 +22,8 @@ Wireframes textuales (Mermaid/Markdown). No se incluyen imágenes.
 - Escaneo QR (SessionScreen/StudentHomeScreen): cámara + entrada manual.
 
 ## Control de sincronización
-- Sección "Sincronización" en `ProfileScreen` con conteo de pendientes, botón "Descargar catálogo", botón "Sincronizar pendientes", resultado/error.
+- Sección "Sincronización" en `ProfileScreen` con conteo de pendientes, botones "Descargar catálogo", "Registrar asistencia offline" y "Sincronizar pendientes", resultado/error.
+- Diálogo `DialogRegistrarAsistenciaOffline`: selección de evento y participante del catálogo remoto; guarda pendiente y permite sincronizar al recuperar conexión (automático o botón).
 
 ## Estados
 - Vacío (EstadoVacio), carga, error de red, éxito de sync, acceso denegado (no aplica por rol en esta app).
