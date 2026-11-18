@@ -1,59 +1,45 @@
-# Estado de Avance – Rúbrica EVA3 (SyncPass)
+# Estado de Avance — Rúbrica EVA3 (SyncPass)
 
-Este documento detalla el estado actual de implementación del proyecto **SyncPass** en comparación con los requerimientos y la rúbrica establecida en [EVA3.md](file:///C:/Src/syncpass-movil/docs/EVA3.md).
+> Documento corregido para reflejar el estado real del código (no sobrestimar).
 
----
+## 1. Lo que YA está realizado
 
-## ✅ 1. Lo que YA está realizado (Implementado)
+### A. Infraestructura y Backend (código preparado; nube NO verificada en esta entrega)
+- [x] Backend Spring Boot + Flyway + PostgreSQL (Supabase) preparado.
+- [x] Autenticación con Cognito (access token, grupos/roles).
+- [x] Control de roles: `ADMINISTRADOR`, `COORDINADOR`, `VOLUNTARIO`, `BENEFICIARIO` (equivalencias con la rúbrica documentadas en `ALCANCE.md`).
+- [ ] Despliegue AWS EC2 verificado actualmente (scripts listos, disponibilidad no comprobada).
+- [ ] API Gateway: **no desplegado** (nginx actúa como reverse proxy).
 
-### A. Infraestructura y Backend (Conexión Cloud)
-- [x] **Backend Spring Boot & Base de Datos:** API desplegada en AWS EC2 conectada a Supabase.
-- [x] **Autenticación JWT:** Implementación completa con `AuthApi`, `TokenInterceptor`, `TokenAuthenticator` y almacenamiento seguro en `TokenDataStore`.
-- [x] **Control de Roles:** Soporte para perfiles de Estudiante, Docente y Administrador.
+### B. Aplicación Móvil Android
+- [x] Arquitectura MVVM en capas (Screens → ViewModels → Repositories → Room/Retrofit).
+- [x] Persistencia local Room + offline-first (asistencias/encuestas pendientes).
+- [x] Sincronización explícita con botón (`SyncViewModel` + sección en Perfil).
+- [x] Descarga de catálogo remoto.
+- [x] APIs nativas: cámara/QR (CameraX + ML Kit + ZXing) y notificaciones (ntfy/FCM parcial).
+- [ ] Geolocalización: **NO implementada** (declarada erróneamente como completa anteriormente).
 
-### B. Aplicación Móvil Android (Arquitectura y Offline-First)
-- [x] **Arquitectura MVVM en Capas:**
-  - **Model:** Entidades Room (`ProyectoEntity`, `ClaseEntity`, `AsistenciaEntity`, etc.), DAOs (`SyncPassDao`, `UniversidadDao`), Repositorios (`SyncRepository`, `UniversidadRepository`) y DTOs de red.
-  - **ViewModel:** Lógica de negocio expuesta mediante `StateFlow` (`TeacherHomeViewModel`, `StudentHomeViewModel`, `SessionViewModel`, `LoginViewModel`, etc.).
-  - **View:** Pantallas desarrolladas en **Jetpack Compose** con Material 3 y componentes reutilizables (`TarjetaClase`, `EstadoVacio`, `PantallaBase`).
-- [x] **Persistencia Local y Sincronización Offline-First:**
-  - Base de datos local Room completamente operativa para operar sin conexión.
-  - Mecanismos de sincronización en `SyncRepository` para descargar el catálogo (`GET /api/sync/catalogo`) y enviar asistencias y encuestas pendientes en lote.
-- [x] **APIs Nativas:**
-  - **Cámara / Escáner QR:** Implementado mediante `CodigoQr` y diálogos de escaneo para verificación de clases y asistencia.
-  - **Geolocalización:** Validación de distancia y ubicación del estudiante en el registro de asistencias.
-  - **Notificaciones:** Servicio de notificaciones push (`NotificationService`, `NtfyTopics`).
+### C. Documentación
+- [x] `ARQUITECTURA.md` con C1/C2 (real, sin API Gateway)/C3.
+- [x] `ALCANCE.md` con RF/RNF, casos de uso, flujos, matriz, equivalencia de roles, backlog.
+- [x] `MOCKUPS.md` con trazabilidad de las 9 vistas.
+- [ ] `NOTIFICACIONES_NTFY.md`: restos `EOF`/`echo done` y nombres `Disco`/`com.rojas.disco` deben eliminarse (pendiente).
 
-### C. Documentación y Arquitectura (`/docs`)
-- [x] **`ARQUITECTURA.md`:** Modelado completo mediante diagramas C4 (Niveles C1 Contexto, C2 Contenedores y C3 Componentes).
-- [x] **`REQUERIMIENTOS.md`:** Levantamiento funcional y no funcional del sistema.
-- [x] **`NOTIFICACIONES_NTFY.md`:** Documentación de integración de notificaciones.
+## 2. Pendiente / Backlog
+- [ ] Conectar la captura de asistencia de `SessionScreen` con `SyncRepository` sin migración de Room, o migración controlada para `remoteEventoId`/`remoteParticipanteId`.
+- [ ] Tests adicionales para alcanzar ≥30% de cobertura verificable (actualmente ~9.8% líneas sobre el módulo completo; tests enfocados en repositorios/lógica pura).
+- [ ] Verificación real de Supabase/EC2/Cognito y E2E Android.
+- [ ] Notificaciones: historial persistido, deduplicación de recordatorios, credenciales FCM.
+- [ ] Refresh de token automático (actualmente `TokenAuthenticator` borra tokens ante 401).
 
----
+## 3. Resumen
 
-## ⏳ 2. Lo que FALTA por realizar / Pendiente (Backlog EVA3)
-
-### A. Cobertura de Pruebas Unitarias (Code Coverage ≥ 30%)
-- [ ] **Tests Unitarios en ViewModels:** Ampliar los tests actuales (`ExampleUnitTest`) para cubrir la lógica de negocio en ViewModels clave (`TeacherHomeViewModel`, `StudentHomeViewModel`, `SessionViewModel`, `LoginViewModel`).
-- [ ] **Tests Unitarios en Repositorios:** Añadir pruebas unitarias para mockear respuestas de red y verificar el almacenamiento en Room / Sincronización Offline.
-- [ ] **Verificación de Cobertura:** Ejecutar tareas de Gradle para validar que se alcance o supere el **30% de cobertura** requerido por la rúbrica (ej. JaCoCo).
-
-### B. Consolidación de Documentación Funcional (`ALCANCE.md`)
-- [ ] Aunque [`REQUERIMIENTOS.md`](file:///C:/Src/syncpass-movil/docs/REQUERIMIENTOS.md) cubre los requerimientos, asegurar que se cuenta con el archivo específico **`ALCANCE.md`** tal como lo menciona explícitamente el punto 1.2.A de la rúbrica (incluyendo RF, RNF, casos de uso detallados y flujos principales).
-
-### C. Validación y Pruebas End-to-End
-- [ ] Realizar pruebas de integración ejecutando la app conectada al backend en AWS EC2 / Supabase para verificar flujos completos (Login -> Sincronización de Cursos/Catálogo -> Registro de Asistencia QR -> Sincronización Offline).
-
----
-
-## 📊 Resumen de Estado
-
-| Componente EVA3 | Estado | Notas |
-| :--- | :---: | :--- |
-| **Backend & Cloud (AWS/Supabase/Spring Boot)** | 🟢 Completado | API y base de datos operativas. |
-| **App Android (Jetpack Compose, MVVM, Offline)** | 🟢 Completado | Arquitectura y flujos principales implementados. |
-| **APIs Nativas (Cámara/QR, Geo, Notificaciones)** | 🟢 Completado | Integradas en la app. |
-| **Documentación C4 (`ARQUITECTURA.md`)** | 🟢 Completado | Modelado estructurado. |
-| **Documentación Funcional (`REQUERIMIENTOS.md`)** | 🟢 Completado | Faltaría revisar si se requiere separar como `ALCANCE.md`. |
-| **Testing & Code Coverage (≥ 30%)** | 🟡 En Progreso | Requiere ampliar tests unitarios en ViewModels/Repositorios. |
-| **Defensa Individual** | ⏳ Pendiente | Preparar preguntas técnicas y explicación de arquitectura. |
+| Componente | Estado |
+|---|---|
+| Backend & Cloud (código) | Preparado (nube no verificada) |
+| App Android (Compose, MVVM, Offline) | Implementado |
+| APIs nativas (Cámara/QR, Notificaciones) | Implementado (2 APIs) |
+| Geolocalización | No implementado |
+| Documentación C4 / Alcance / Mockups | Implementado |
+| Testing & Coverage | Parcial (36 tests JVM) |
+| Defensa individual | Pendiente |

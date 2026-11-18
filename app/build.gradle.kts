@@ -1,9 +1,16 @@
+
+
+import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
+import org.gradle.testing.jacoco.tasks.JacocoReport
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    jacoco
 }
 
 android {
@@ -33,6 +40,8 @@ android {
         }
         debug {
             buildConfigField("String", "API_BASE_URL", "\"https://syncpass.duckdns.org/\"")
+            // Genera build/outputs/jacoco/testDebugUnitTest.exec para los tests JVM.
+            enableUnitTestCoverage = true
         }
     }
     compileOptions {
@@ -90,6 +99,7 @@ dependencies {
     implementation(libs.auth0.jwt)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -97,3 +107,87 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
+
+// ---------------------------------------------------------------------------
+// JaCoCo para los tests JVM (testDebugUnitTest).
+// Solo se excluye código GENERADO por Hilt/Room/KSP, BuildConfig, R/BR y
+// databinding. La lógica propia NO se excluye para no inflar la cobertura.
+// ---------------------------------------------------------------------------
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+val clasesGeneradasExcluidas = listOf(
+    "**/R.class",
+    "**/R$*.class",
+    "**/BuildConfig.*",
+    "**/Manifest*.*",
+    "**/BR.class",
+    "**/databinding/**",
+    "**/*_Impl.class",
+    "**/*_Impl$*.class",
+    "**/*_Factory.class",
+    "**/*_Factory$*.class",
+    "**/*_MembersInjector.class",
+    "**/*_MembersInjector$*.class",
+    "**/Dagger*.class",
+    "**/Dagger*$*.class",
+    "**/*_Component.class",
+    "**/*_Component$*.class",
+    "**/*Module_*.class",
+    "**/Hilt_*.class",
+    "**/*_Hilt*.class",
+    "**/*_Delegate.class",
+    "**/*_ViewProvider.class"
+)
+
+val raizBuildCobertura = layout.buildDirectory.get().asFile
+val fuentesCobertura = files("src/main/java", "src/main/kotlin")
+val clasesCobertura = files(
+    fileTree("$raizBuildCobertura/tmp/kotlin-classes/debug") {
+        include("**/*.class")
+        exclude(clasesGeneradasExcluidas)
+    },
+    fileTree("$raizBuildCobertura/intermediates/javac/debug/classes") {
+        include("**/*.class")
+        exclude(clasesGeneradasExcluidas)
+    }
+)
+val ejecucionCobertura = fileTree(raizBuildCobertura) {
+    include("outputs/jacoco/**/*.exec")
+    include("jacoco/**/*.exec")
+}
+
+val jacocoTestReport = tasks.register<JacocoReport>("jacocoTestReport") {
+    group = "reporting"
+    description = "Genera el reporte HTML/XML de cobertura de los tests JVM (debug)."
+    dependsOn("testDebugUnitTest")
+    classDirectories.setFrom(clasesCobertura)
+    sourceDirectories.setFrom(fuentesCobertura)
+    executionData.setFrom(ejecucionCobertura)
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        csv.required.set(false)
+    }
+}
+
+val jacocoTestCoverageVerification = tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    group = "verification"
+    description = "Verifica que la cobertura JVM sea al menos 30%."
+    dependsOn(jacocoTestReport)
+    classDirectories.setFrom(clasesCobertura)
+    sourceDirectories.setFrom(fuentesCobertura)
+    executionData.setFrom(ejecucionCobertura)
+    violationRules {
+        rule {
+            limit {
+                minimum = BigDecimal("0.30")
+            }
+        }
+    }
+}
+
+
+

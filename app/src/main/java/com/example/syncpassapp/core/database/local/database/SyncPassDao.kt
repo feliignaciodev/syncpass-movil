@@ -56,6 +56,10 @@ interface SyncPassDao {
     @Query("SELECT * FROM asistencias_offline WHERE sincronizado = 0")
     suspend fun getAsistenciasPendientes(): List<AsistenciaEntity>
 
+    /** Contador reactivo de asistencias sin sincronizar (no cambia el esquema). */
+    @Query("SELECT COUNT(*) FROM asistencias_offline WHERE sincronizado = 0")
+    fun contarAsistenciasPendientes(): Flow<Int>
+
     @Query("UPDATE asistencias_offline SET sincronizado = 1 WHERE uuid IN (:uuids)")
     suspend fun markAsistenciasAsSincronizadas(uuids: List<String>)
 
@@ -65,6 +69,10 @@ interface SyncPassDao {
 
     @Query("SELECT * FROM encuestas_offline WHERE sincronizado = 0")
     suspend fun getEncuestasPendientes(): List<EncuestaEntity>
+
+    /** Contador reactivo de encuestas sin sincronizar (no cambia el esquema). */
+    @Query("SELECT COUNT(*) FROM encuestas_offline WHERE sincronizado = 0")
+    fun contarEncuestasPendientes(): Flow<Int>
 
     @Query("UPDATE encuestas_offline SET sincronizado = 1 WHERE uuid IN (:uuids)")
     suspend fun markEncuestasAsSincronizadas(uuids: List<String>)

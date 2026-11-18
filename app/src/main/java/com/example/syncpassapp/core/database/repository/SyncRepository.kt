@@ -13,14 +13,26 @@ import com.example.syncpassapp.core.network.remote.model.AsistenciaLoteRequest
 import com.example.syncpassapp.core.network.remote.model.EncuestaDto
 import com.example.syncpassapp.core.network.remote.model.EncuestaLoteRequest
 import com.example.syncpassapp.core.network.remote.model.ResultadoSyncResponse
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
+
+/** Resumen agregado de una corrida de sincronización de todos los pendientes. */
+data class ResumenSync(
+    val aceptados: Int = 0,
+    val duplicados: Int = 0,
+    val rechazados: Int = 0
+)
 
 @Singleton
 class SyncRepository @Inject constructor(
     private val syncApi: SyncApi,
     private val syncPassDao: SyncPassDao
 ) {
+
+    /** Contadores reactivos para que la UI muestre los pendientes sin consultar el DAO. */
+    val asistenciasPendientes: Flow<Int> = syncPassDao.contarAsistenciasPendientes()
+    val encuestasPendientes: Flow<Int> = syncPassDao.contarEncuestasPendientes()
 
     suspend fun descargarYGuardarCatalogo(): Result<Unit> {
         return try {
@@ -142,6 +154,44 @@ class SyncRepository @Inject constructor(
             }
 
             Result.success(resultado)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Sube todos los pendientes (asistencias y encuestas) y devuelve el resumen.
+     *
+     * Si no hay pendientes no se hace ninguna llamada HTTP. Los registros
+     * aceptados y duplicados se marcan como sincronizados dentro de los métodos
+     * específicos; los rechazados y los que fallan por red quedan pendientes
+     * para el siguiente intento. Si una de las dos subidas falla, se propaga el
+     * error aunque la otra haya podido completarse.
+     */
+    suspend fun sincronizarPendientes(): Result<ResumenSync?> {
+        return try {
+            val asistencias = sincronizarAsistenciasPendientes()
+            val encuestas = sincronizarEncuestasPendientes()
+
+            val error = asistencias.exceptionOrNull() ?: encuestas.exceptionOrNull()
+            if (error != null) {
+                Result.failure(error)
+            } else {
+                val a = asistencias.getOrNull()
+                val e = encuestas.getOrNull()
+                if (a == null && e == null) {
+                    // No había nada pendiente en ninguna de las dos tablas.
+                    Result.success(null)
+                } else {
+                    Result.success(
+                        ResumenSync(
+                            aceptados = (a?.aceptados?.size ?: 0) + (e?.aceptados?.size ?: 0),
+                            duplicados = (a?.duplicados?.size ?: 0) + (e?.duplicados?.size ?: 0),
+                            rechazados = (a?.rechazados?.size ?: 0) + (e?.rechazados?.size ?: 0)
+                        )
+                    )
+                }
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }

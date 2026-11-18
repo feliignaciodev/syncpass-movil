@@ -38,6 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.syncpassapp.core.designsystem.components.EstadoVacio
 import com.example.syncpassapp.core.designsystem.components.TarjetaClase
 
+
 @Composable
 fun TeacherHomeScreen(
     viewModel: TeacherHomeViewModel = hiltViewModel(),

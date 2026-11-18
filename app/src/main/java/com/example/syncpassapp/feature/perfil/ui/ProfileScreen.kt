@@ -7,11 +7,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,13 +34,16 @@ import com.example.syncpassapp.core.common.qr.CodigoQr
 import com.example.syncpassapp.core.designsystem.components.DialogMostrarQr
 import com.example.syncpassapp.core.designsystem.components.TarjetaSeccion
 import com.example.syncpassapp.feature.perfil.ui.ProfileViewModel
+import com.example.syncpassapp.feature.sync.ui.SyncViewModel
 
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
+    syncViewModel: SyncViewModel = hiltViewModel(),
     onLogout: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val syncUiState by syncViewModel.uiState.collectAsState()
     var showDialogQrEstudiante by remember { mutableStateOf(false) }
 
     Column(
@@ -126,6 +131,52 @@ fun ProfileScreen(
             }
         } ?: run {
             Text("Cargando perfil...")
+        }
+
+        // Sincronización manual: la pantalla solo habla con SyncViewModel.
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        Text(
+            text = "Sincronización",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = "Pendientes: ${syncUiState.pendientesAsistencias} asistencias, " +
+                "${syncUiState.pendientesEncuestas} encuestas",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Button(
+            onClick = { syncViewModel.sincronizarPendientes() },
+            enabled = !syncUiState.sincronizando,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (syncUiState.sincronizando) {
+                CircularProgressIndicator(
+                    modifier = Modifier.height(20.dp).width(20.dp),
+                    strokeWidth = 2.dp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+            Text("Sincronizar pendientes")
+        }
+        syncUiState.mensaje?.let { mensaje ->
+            Text(
+                text = mensaje,
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (syncUiState.esError) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.primary
+                }
+            )
+            if (!syncUiState.esError) {
+                Text(
+                    text = "Aceptados: ${syncUiState.aceptados} · " +
+                        "Duplicados: ${syncUiState.duplicados} · Rechazados: ${syncUiState.rechazados}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
 
         if (showDialogQrEstudiante) {
