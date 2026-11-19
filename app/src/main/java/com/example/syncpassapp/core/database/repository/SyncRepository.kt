@@ -1,17 +1,15 @@
 package com.example.syncpassapp.core.database.repository
 
-import com.example.syncpassapp.core.database.local.database.SyncPassDao
 import com.example.syncpassapp.core.database.local.entities.AsistenciaEntity
 import com.example.syncpassapp.core.database.local.entities.EncuestaEntity
 import com.example.syncpassapp.core.database.local.entities.EventoEntity
 import com.example.syncpassapp.core.database.local.entities.InscripcionEntity
 import com.example.syncpassapp.core.database.local.entities.ParticipanteEntity
 import com.example.syncpassapp.core.database.local.entities.ProyectoEntity
-import com.example.syncpassapp.core.network.remote.SyncApi
+import com.example.syncpassapp.core.datasource.local.SyncLocalDataSource
+import com.example.syncpassapp.core.datasource.remote.SyncRemoteDataSource
 import com.example.syncpassapp.core.network.remote.model.AsistenciaDto
-import com.example.syncpassapp.core.network.remote.model.AsistenciaLoteRequest
 import com.example.syncpassapp.core.network.remote.model.EncuestaDto
-import com.example.syncpassapp.core.network.remote.model.EncuestaLoteRequest
 import com.example.syncpassapp.core.network.remote.model.ResultadoSyncResponse
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -24,19 +22,26 @@ data class ResumenSync(
     val rechazados: Int = 0
 )
 
+/**
+ * Repositorio offline-first del modelo SyncPass.
+ *
+ * Coordina dos datasources: [SyncLocalDataSource] (Room) y [SyncRemoteDataSource]
+ * (Retrofit). Convierte DTO ↔ entidad y decide qué registros quedan sincronizados.
+ */
 @Singleton
 class SyncRepository @Inject constructor(
-    private val syncApi: SyncApi,
-    private val syncPassDao: SyncPassDao
+    private val remote: SyncRemoteDataSource,
+    private val local: SyncLocalDataSource
 ) {
 
-    /** Contadores reactivos para que la UI muestre los pendientes sin consultar el DAO. */
-    val asistenciasPendientes: Flow<Int> = syncPassDao.contarAsistenciasPendientes()
-    val encuestasPendientes: Flow<Int> = syncPassDao.contarEncuestasPendientes()
+    /** Contadores reactivos para que la UI muestre los pendientes. */
+    val asistenciasPendientes: Flow<Int> = local.contarAsistenciasPendientes()
+    val encuestasPendientes: Flow<Int> = local.contarEncuestasPendientes()
 
+    /** Descarga el catálogo del backend y lo guarda en Room para trabajar sin conexión. */
     suspend fun descargarYGuardarCatalogo(): Result<Unit> {
         return try {
-            val response = syncApi.obtenerCatalogo()
+            val response = remote.obtenerCatalogo()
 
             val proyectos = response.proyectos.map {
                 ProyectoEntity(
@@ -83,10 +88,7 @@ class SyncRepository @Inject constructor(
                 )
             }
 
-            syncPassDao.insertProyectos(proyectos)
-            syncPassDao.insertEventos(eventos)
-            syncPassDao.insertParticipantes(participantes)
-            syncPassDao.insertInscripciones(inscripciones)
+            local.guardarCatalogo(proyectos, eventos, participantes, inscripciones)
 
             Result.success(Unit)
         } catch (e: Exception) {
@@ -96,7 +98,7 @@ class SyncRepository @Inject constructor(
 
     suspend fun sincronizarAsistenciasPendientes(): Result<ResultadoSyncResponse?> {
         return try {
-            val pendientes = syncPassDao.getAsistenciasPendientes()
+            val pendientes = local.asistenciasPendientes()
             if (pendientes.isEmpty()) return Result.success(null)
 
             val dtos = pendientes.map {
@@ -116,12 +118,10 @@ class SyncRepository @Inject constructor(
                 )
             }
 
-            val resultado = syncApi.sincronizarAsistencias(AsistenciaLoteRequest(dtos))
-            
-            val uuidsAceptados = resultado.aceptados + resultado.duplicados
-            if (uuidsAceptados.isNotEmpty()) {
-                syncPassDao.markAsistenciasAsSincronizadas(uuidsAceptados)
-            }
+            val resultado = remote.enviarAsistencias(dtos)
+
+            // Aceptados y duplicados ya están en el servidor: se marcan para no reenviarlos.
+            local.marcarAsistenciasSincronizadas(resultado.aceptados + resultado.duplicados)
 
             Result.success(resultado)
         } catch (e: Exception) {
@@ -131,7 +131,7 @@ class SyncRepository @Inject constructor(
 
     suspend fun sincronizarEncuestasPendientes(): Result<ResultadoSyncResponse?> {
         return try {
-            val pendientes = syncPassDao.getEncuestasPendientes()
+            val pendientes = local.encuestasPendientes()
             if (pendientes.isEmpty()) return Result.success(null)
 
             val dtos = pendientes.map {
@@ -146,12 +146,9 @@ class SyncRepository @Inject constructor(
                 )
             }
 
-            val resultado = syncApi.sincronizarEncuestas(EncuestaLoteRequest(dtos))
+            val resultado = remote.enviarEncuestas(dtos)
 
-            val uuidsAceptados = resultado.aceptados + resultado.duplicados
-            if (uuidsAceptados.isNotEmpty()) {
-                syncPassDao.markEncuestasAsSincronizadas(uuidsAceptados)
-            }
+            local.marcarEncuestasSincronizadas(resultado.aceptados + resultado.duplicados)
 
             Result.success(resultado)
         } catch (e: Exception) {
@@ -197,16 +194,18 @@ class SyncRepository @Inject constructor(
         }
     }
 
+    /** Guarda una asistencia en Room con `sincronizado = false` (funciona sin red). */
     suspend fun registrarAsistenciaLocal(asistencia: AsistenciaEntity) {
-        syncPassDao.insertAsistencia(asistencia)
+        local.guardarAsistencia(asistencia)
     }
 
+    /** Guarda una encuesta en Room con `sincronizado = false` (funciona sin red). */
     suspend fun registrarEncuestaLocal(encuesta: EncuestaEntity) {
-        syncPassDao.insertEncuesta(encuesta)
+        local.guardarEncuesta(encuesta)
     }
 
-    /** Lectura del catálogo ya descargado (offline). No cambia esquema. */
-    fun obtenerEventosLocales(): Flow<List<EventoEntity>> = syncPassDao.getAllEventos()
+    /** Lectura del catálogo ya descargado (offline). */
+    fun obtenerEventosLocales(): Flow<List<EventoEntity>> = local.eventos()
 
-    fun obtenerParticipantesLocales(): Flow<List<ParticipanteEntity>> = syncPassDao.getAllParticipantes()
+    fun obtenerParticipantesLocales(): Flow<List<ParticipanteEntity>> = local.participantes()
 }

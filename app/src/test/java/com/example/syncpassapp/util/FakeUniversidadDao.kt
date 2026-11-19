@@ -22,25 +22,54 @@ class FakeUniversidadDao : UniversidadDao {
 
     private var siguienteClaseId = 1L
 
-    override suspend fun insertUsuario(usuario: UsuarioEntity): Long = usuario.usuarioId
+    // Usuarios, roles locales y su relación (para login, sesión y perfil).
+    val usuarios = LinkedHashMap<Long, UsuarioEntity>()
+    val roles = LinkedHashMap<Long, RolEntity>()
+    val usuarioRoles = LinkedHashSet<UsuarioRolCrossRef>()
+    private val _usuarios = MutableStateFlow<List<UsuarioEntity>>(emptyList())
+    private var siguienteUsuarioId = 1L
+    private var siguienteRolId = 1L
 
-    override suspend fun insertRol(rol: RolEntity): Long = rol.rolId
+    override suspend fun insertUsuario(usuario: UsuarioEntity): Long {
+        val id = if (usuario.usuarioId == 0L) siguienteUsuarioId++ else usuario.usuarioId
+        usuarios[id] = usuario.copy(usuarioId = id)
+        _usuarios.value = usuarios.values.toList()
+        return id
+    }
 
-    override suspend fun insertUsuarioRolCrossRef(crossRef: UsuarioRolCrossRef) = Unit
+    override suspend fun insertRol(rol: RolEntity): Long {
+        val id = if (rol.rolId == 0L) siguienteRolId++ else rol.rolId
+        roles[id] = rol.copy(rolId = id)
+        return id
+    }
 
-    override fun getAllUsuarios(): Flow<List<UsuarioEntity>> = MutableStateFlow(emptyList())
+    override suspend fun insertUsuarioRolCrossRef(crossRef: UsuarioRolCrossRef) {
+        usuarioRoles += crossRef
+    }
 
-    override fun getAllRoles(): Flow<List<RolEntity>> = MutableStateFlow(emptyList())
+    override fun getAllUsuarios(): Flow<List<UsuarioEntity>> = _usuarios
+
+    override fun getAllRoles(): Flow<List<RolEntity>> = MutableStateFlow(roles.values.toList())
 
     override fun getUsuarioConRoles(usuarioId: Long): Flow<UsuarioConRoles?> =
-        MutableStateFlow(null)
+        _usuarios.map { usuarioConRoles(usuarioId) }
 
-    override suspend fun getUsuarioConRolesByEmail(email: String): UsuarioConRoles? = null
+    override suspend fun getUsuarioConRolesByEmail(email: String): UsuarioConRoles? =
+        usuarios.values.firstOrNull { it.email == email }?.let { usuarioConRoles(it.usuarioId) }
 
     override fun getRolConUsuarios(rolId: Long): Flow<RolConUsuarios?> =
         MutableStateFlow(null)
 
-    override suspend fun getRolIdByNombre(nombreRol: String): Long? = null
+    override suspend fun getRolIdByNombre(nombreRol: String): Long? =
+        roles.values.firstOrNull { it.nombreRol == nombreRol }?.rolId
+
+    private fun usuarioConRoles(usuarioId: Long): UsuarioConRoles? =
+        usuarios[usuarioId]?.let { usuario ->
+            UsuarioConRoles(
+                usuario = usuario,
+                roles = usuarioRoles.filter { it.usuarioId == usuarioId }.mapNotNull { roles[it.rolId] }
+            )
+        }
 
     override suspend fun getAllClasesList(): List<ClaseEntity> = clases.values.toList()
 

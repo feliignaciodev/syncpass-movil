@@ -1,4 +1,5 @@
 package com.example.syncpassapp.feature.clases.ui
+import com.example.syncpassapp.core.datasource.local.UniversidadLocalDataSource
 
 import androidx.lifecycle.SavedStateHandle
 import com.example.syncpassapp.core.database.local.entities.ClaseEntity
@@ -28,7 +29,7 @@ class TeacherHomeViewModelTest {
     @Before
     fun setUp() {
         dao = FakeUniversidadDao()
-        repository = UniversidadRepository(dao)
+        repository = UniversidadRepository(UniversidadLocalDataSource(dao))
     }
 
     private fun viewModel(profesorId: Long = 10L): TeacherHomeViewModel =

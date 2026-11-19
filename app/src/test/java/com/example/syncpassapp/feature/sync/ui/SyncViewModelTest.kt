@@ -1,4 +1,6 @@
 package com.example.syncpassapp.feature.sync.ui
+import com.example.syncpassapp.core.datasource.local.SyncLocalDataSource
+import com.example.syncpassapp.core.datasource.remote.SyncRemoteDataSource
 
 import com.example.syncpassapp.core.database.local.entities.AsistenciaEntity
 import com.example.syncpassapp.core.database.local.entities.EncuestaEntity
@@ -33,7 +35,7 @@ class SyncViewModelTest {
     fun setUp() {
         dao = FakeSyncPassDao()
         api = FakeSyncApi()
-        viewModel = SyncViewModel(SyncRepository(api, dao))
+        viewModel = SyncViewModel(SyncRepository(SyncRemoteDataSource(api), SyncLocalDataSource(dao)))
     }
 
     /** `stateIn` solo produce valores mientras hay un suscriptor. */

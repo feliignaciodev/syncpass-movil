@@ -12,7 +12,8 @@
 - [ ] API Gateway: **no desplegado** (nginx actúa como reverse proxy).
 
 ### B. Aplicación Móvil Android
-- [x] Arquitectura MVVM en capas (Screens → ViewModels → Repositories → Room/Retrofit).
+- [x] Arquitectura MVVM en capas (Screens → ViewModels → Repositories → DataSources → Room/DataStore/Retrofit). Los ViewModels solo dependen de repositorios.
+- [x] Perfiles de la rúbrica (`Rol`: Estudiante, Docente, Voluntario, Administrador) con navegación por rol; Voluntario entra al inicio docente.
 - [x] Persistencia local Room + offline-first (asistencias/encuestas pendientes).
 - [x] Registro offline con evento/participante del catálogo y sincronización manual con botón (`SyncViewModel` + Perfil) y automática al recuperar red (`NetworkCallback` en la aplicación).
 - [x] Descarga de catálogo remoto.
@@ -22,12 +23,13 @@
 ### C. Documentación
 - [x] `ARQUITECTURA.md` con C1/C2 (real, sin API Gateway)/C3.
 - [x] `ALCANCE.md` con RF/RNF, casos de uso, flujos, matriz, equivalencia de roles, backlog.
-- [x] `MOCKUPS.md` con trazabilidad de las 9 vistas.
-- [ ] `NOTIFICACIONES_NTFY.md`: restos `EOF`/`echo done` y nombres `Disco`/`com.rojas.disco` deben eliminarse (pendiente).
+- [x] `MOCKUPS.md` con wireframes de las 10 vistas y 4 diálogos, flujo de navegación y trazabilidad vista → RF → estado.
+- [x] `NOTIFICACIONES_NTFY.md` reescrito para SyncPass (sin restos `EOF`/`echo done` ni nombres del caso base) y sin el endpoint `/api/notificar`, que el backend SyncPass no tiene.
+- [x] `REQUERIMIENTOS.md` marcado como caso de estudio base ("Disco"); el alcance vigente está en `ALCANCE.md`.
 
 ## 2. Pendiente / Backlog
 - [ ] Integrar la sincronización remota con el flujo local de `SessionScreen` (hoy existe un registro offline real separado que usa el catálogo remoto desde Perfil; unificar ambos modelos sería una migración controlada).
-- [x] Tests adicionales: 50 tests JVM, cobertura JaCoCo **31.8 % líneas** (scope: lógica de negocio; Compose/UI excluida). Reporte en `app/build/reports/jacoco/manual`.
+- [x] Tests: 84 tests JVM, cobertura JaCoCo **50,0 % de líneas** (alcance: lógica de negocio; Compose/UI excluida). Reporte portable: `./gradlew jacocoTestReport` → `app/build/reports/jacoco/jacocoTestReport/html/index.html`; mínimo verificable con `./gradlew jacocoTestCoverageVerification`.
 - [ ] Verificación real de Supabase/EC2/Cognito y E2E Android.
 - [ ] Notificaciones: historial persistido, deduplicación de recordatorios, credenciales FCM.
 - [ ] Refresh de token automático (actualmente `TokenAuthenticator` borra tokens ante 401).
@@ -41,5 +43,5 @@
 | APIs nativas (Cámara/QR, Notificaciones) | Implementado (2 APIs) |
 | Geolocalización | No implementado |
 | Documentación C4 / Alcance / Mockups | Implementado |
-| Testing & Coverage | Parcial (36 tests JVM) |
+| Testing & Coverage | Implementado (84 tests JVM, 50,0 % de líneas) |
 | Defensa individual | Pendiente |

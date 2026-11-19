@@ -90,21 +90,13 @@ fun ProfileScreen(
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
+                    // Perfil de la rúbrica según el token (Estudiante, Docente, Voluntario o Administrador);
+                    // mientras se lee la sesión se muestran los roles locales.
                     Text(
-                        text = "Roles Asignados:",
+                        text = "Rol: ${uiState.rol?.etiqueta ?: info.roles.joinToString { it.nombreRol }}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    info.roles.forEach { rol ->
-                        Text(
-                            text = "• ${rol.nombreRol}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 

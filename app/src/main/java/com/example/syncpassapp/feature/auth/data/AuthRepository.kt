@@ -1,40 +1,39 @@
 ﻿package com.example.syncpassapp.feature.auth.data
 
-import com.example.syncpassapp.core.network.remote.AuthApi
-import com.example.syncpassapp.core.datastore.TokenDataStore
-import com.example.syncpassapp.core.network.remote.model.LoginRequest
-import com.example.syncpassapp.core.network.remote.model.RegistroRequest
-import com.example.syncpassapp.core.network.remote.model.ConfirmarRegistroRequest
-import com.example.syncpassapp.core.network.remote.model.ReenviarCodigoRequest
-import com.example.syncpassapp.core.network.remote.model.UsuarioResponse
+import com.example.syncpassapp.core.datasource.local.SesionLocalDataSource
+import com.example.syncpassapp.core.datasource.remote.AuthRemoteDataSource
 import com.example.syncpassapp.core.datastore.UserInfo
-import dagger.hilt.android.scopes.ViewModelScoped
+import com.example.syncpassapp.core.network.remote.model.RegistroRequest
+import com.example.syncpassapp.core.network.remote.model.UsuarioResponse
 import javax.inject.Inject
+import javax.inject.Singleton
 
-@ViewModelScoped
+/**
+ * Repositorio de autenticación: login, registro y sesión.
+ *
+ * Usa [AuthRemoteDataSource] (backend → Cognito) y [SesionLocalDataSource]
+ * (token en DataStore). Los ViewModels nunca tocan Retrofit ni DataStore.
+ */
+@Singleton
 class AuthRepository @Inject constructor(
-    private val authApi: AuthApi,
-    private val tokenDataStore: TokenDataStore
+    private val remote: AuthRemoteDataSource,
+    private val sesion: SesionLocalDataSource
 ) {
 
     suspend fun login(username: String, password: String): Result<AuthResult> {
         return try {
-            val response = authApi.login(LoginRequest(username, password))
+            val response = remote.login(username, password)
 
             val token = response.token
             if (token.isBlank()) {
                 return Result.failure(Exception("Token de acceso vacío"))
             }
 
-            // Guardar token
-            tokenDataStore.saveTokens(
-                accessToken = token,
-                refreshToken = token,
-                idToken = token
-            )
+            sesion.guardarToken(token)
 
+            // El rol que informa el backend manda; si no viene, se usan los grupos del token.
             val usuario = response.usuario
-            val decodedUserInfo = tokenDataStore.getUserInfo()
+            val decodedUserInfo = sesion.usuarioActual()
             val rolesFromUsuario = listOfNotNull(usuario?.rol)
 
             val userInfo = UserInfo(
@@ -53,8 +52,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun registrar(request: RegistroRequest): Result<UsuarioResponse> {
         return try {
-            val response = authApi.registrar(request)
-            Result.success(response)
+            Result.success(remote.registrar(request))
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -62,7 +60,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun confirmarRegistro(email: String, codigo: String): Result<Unit> {
         return try {
-            authApi.confirmar(ConfirmarRegistroRequest(email, codigo))
+            remote.confirmarRegistro(email, codigo)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -71,7 +69,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun reenviarCodigo(email: String): Result<Unit> {
         return try {
-            authApi.reenviarCodigo(ReenviarCodigoRequest(email))
+            remote.reenviarCodigo(email)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -80,18 +78,18 @@ class AuthRepository @Inject constructor(
 
     suspend fun logout(): Boolean {
         return try {
-            tokenDataStore.clearTokens()
+            sesion.borrar()
             true
         } catch (e: Exception) {
             false
         }
     }
 
-    suspend fun getAccessToken(): String? = tokenDataStore.getAccessToken()
+    suspend fun getAccessToken(): String? = sesion.accessToken()
 
-    suspend fun getUserInfo(): UserInfo? = tokenDataStore.getUserInfo()
+    suspend fun getUserInfo(): UserInfo? = sesion.usuarioActual()
 
-    suspend fun isTokenExpired(): Boolean = tokenDataStore.isAccessTokenExpired()
+    suspend fun isTokenExpired(): Boolean = sesion.tokenExpirado()
 }
 
 data class AuthResult(

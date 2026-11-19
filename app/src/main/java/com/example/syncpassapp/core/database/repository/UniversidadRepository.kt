@@ -1,89 +1,91 @@
 ﻿package com.example.syncpassapp.core.database.repository
 
-import com.example.syncpassapp.core.database.local.database.UniversidadDao
 import com.example.syncpassapp.core.database.local.entities.AsistenciaClaseEntity
 import com.example.syncpassapp.core.database.local.entities.ClaseEntity
 import com.example.syncpassapp.core.database.local.entities.RolEntity
 import com.example.syncpassapp.core.database.local.entities.UsuarioEntity
-import com.example.syncpassapp.core.database.local.entities.UsuarioRolCrossRef
 import com.example.syncpassapp.core.database.local.model.ClaseConDetalles
 import com.example.syncpassapp.core.database.local.model.RolConUsuarios
 import com.example.syncpassapp.core.database.local.model.UsuarioConRoles
+import com.example.syncpassapp.core.datasource.local.UniversidadLocalDataSource
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Repositorio del modelo de clases (local): reglas de negocio de inscripción,
+ * asistencia y cuestionario. Accede a Room solo a través de [UniversidadLocalDataSource].
+ */
 @Singleton
 class UniversidadRepository @Inject constructor(
-    private val universidadDao: UniversidadDao
+    private val local: UniversidadLocalDataSource
 ) {
-    val todosLosUsuarios: Flow<List<UsuarioEntity>> = universidadDao.getAllUsuarios()
-    val todosLosRoles: Flow<List<RolEntity>> = universidadDao.getAllRoles()
-    val todasLasClases: Flow<List<ClaseEntity>> = universidadDao.getAllClases()
+    val todosLosUsuarios: Flow<List<UsuarioEntity>> = local.usuarios()
+    val todosLosRoles: Flow<List<RolEntity>> = local.roles()
+    val todasLasClases: Flow<List<ClaseEntity>> = local.clases()
 
     // --- GESTIÓN DE USUARIOS Y ROLES ---
 
     suspend fun crearUsuario(usuario: UsuarioEntity): Long {
-        return universidadDao.insertUsuario(usuario)
+        return local.insertarUsuario(usuario)
     }
 
     suspend fun crearRol(rol: RolEntity): Long {
-        return universidadDao.insertRol(rol)
+        return local.insertarRol(rol)
     }
 
     suspend fun asignarRolAUsuario(usuarioId: Long, rolId: Long) {
-        val crossRef = UsuarioRolCrossRef(usuarioId = usuarioId, rolId = rolId)
-        universidadDao.insertUsuarioRolCrossRef(crossRef)
+        local.asignarRol(usuarioId, rolId)
     }
 
     fun obtenerUsuarioConRoles(usuarioId: Long): Flow<UsuarioConRoles?> {
-        return universidadDao.getUsuarioConRoles(usuarioId)
+        return local.usuarioConRoles(usuarioId)
     }
 
     suspend fun buscarUsuarioPorEmail(email: String): UsuarioConRoles? {
-        return universidadDao.getUsuarioConRolesByEmail(email)
+        return local.usuarioConRolesPorEmail(email)
     }
 
     fun obtenerRolConUsuarios(rolId: Long): Flow<RolConUsuarios?> {
-        return universidadDao.getRolConUsuarios(rolId)
+        return local.rolConUsuarios(rolId)
     }
 
     suspend fun obtenerRolIdPorNombre(nombreRol: String): Long? {
-        return universidadDao.getRolIdByNombre(nombreRol)
+        return local.rolIdPorNombre(nombreRol)
     }
 
     suspend fun obtenerTodasLasClases(): List<ClaseEntity> {
-        return universidadDao.getAllClasesList()
+        return local.listaClases()
     }
 
     // --- GESTIÓN DE CLASES, ASISTENCIA Y CUESTIONARIOS ---
 
     suspend fun crearClase(clase: ClaseEntity): Long {
-        return universidadDao.insertClase(clase)
+        return local.insertarClase(clase)
     }
 
     suspend fun actualizarClase(clase: ClaseEntity) {
-        universidadDao.updateClase(clase)
+        local.actualizarClase(clase)
     }
 
     fun obtenerClasesPorProfesor(profesorId: Long): Flow<List<ClaseEntity>> {
-        return universidadDao.getClasesByProfesor(profesorId)
+        return local.clasesPorProfesor(profesorId)
     }
 
     fun obtenerClasesPorEstudiante(estudianteId: Long): Flow<List<ClaseEntity>> {
-        return universidadDao.getClasesByEstudiante(estudianteId)
+        return local.clasesPorEstudiante(estudianteId)
     }
 
     fun obtenerAsistenciaEstudiante(estudianteId: Long, claseId: Long): Flow<AsistenciaClaseEntity?> {
-        return universidadDao.getAsistenciaEstudiante(estudianteId, claseId)
+        return local.asistenciaEstudiante(estudianteId, claseId)
     }
 
     fun obtenerClaseConDetalles(claseId: Long): Flow<ClaseConDetalles?> {
-        return universidadDao.getClaseConDetalles(claseId)
+        return local.claseConDetalles(claseId)
     }
 
     suspend fun obtenerClasePorId(claseId: Long): ClaseEntity? {
-        return universidadDao.getClaseById(claseId)
+        return local.clasePorId(claseId)
     }
 
     /**
@@ -91,7 +93,7 @@ class UniversidadRepository @Inject constructor(
      * REGLA DE NEGOCIO: Un usuario no puede ser estudiante y profesor de la misma clase al mismo tiempo.
      */
     suspend fun inscribirEstudianteEnClase(usuarioId: Long, claseId: Long) {
-        val clase = universidadDao.getClaseById(claseId)
+        val clase = local.clasePorId(claseId)
             ?: throw IllegalArgumentException("La clase con ID $claseId no existe.")
 
         if (clase.profesorId == usuarioId) {
@@ -104,7 +106,7 @@ class UniversidadRepository @Inject constructor(
             esPresente = false,
             respuestasCuestionarioJson = null
         )
-        universidadDao.insertAsistencia(asistenciaInicial)
+        local.guardarAsistencia(asistenciaInicial)
     }
 
     /**
@@ -125,19 +127,18 @@ class UniversidadRepository @Inject constructor(
             esPresente = esPresente,
             respuestasCuestionarioJson = respuestasFinales
         )
-        universidadDao.insertAsistencia(asistencia)
+        local.guardarAsistencia(asistencia)
     }
 
     fun obtenerEstudiantesPresentes(claseId: Long): Flow<List<AsistenciaClaseEntity>> {
-        return universidadDao.getEstudiantesPresentesEnClase(claseId)
+        return local.estudiantesPresentes(claseId)
     }
 
     suspend fun eliminarUsuario(usuario: UsuarioEntity) {
-        universidadDao.deleteUsuario(usuario)
+        local.eliminarUsuario(usuario)
     }
 
     suspend fun eliminarClase(clase: ClaseEntity) {
-        universidadDao.deleteClase(clase)
+        local.eliminarClase(clase)
     }
 }
-

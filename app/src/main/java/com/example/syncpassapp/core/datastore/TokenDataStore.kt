@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.auth0.jwt.JWT
 import com.auth0.jwt.interfaces.DecodedJWT
+import com.example.syncpassapp.core.common.auth.Rol
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -112,14 +113,13 @@ data class UserInfo(
     val phone: String?,
     val groups: List<String>
 ) {
-    val isAdmin: Boolean = groups.any { 
-        it.equals("administrador", ignoreCase = true) || it.equals("admin", ignoreCase = true) 
-    }
-    val isProfesor: Boolean = groups.any { 
-        it.equals("coordinador", ignoreCase = true) || it.equals("profesor", ignoreCase = true) || isAdmin 
-    }
-    val isEstudiante: Boolean = groups.any { 
-        it.equals("beneficiario", ignoreCase = true) || it.equals("voluntario", ignoreCase = true) || it.equals("estudiante", ignoreCase = true) 
-    }
+    /** Perfiles de la rúbrica según los grupos de Cognito (ver [Rol]). */
+    val roles: Set<Rol> = Rol.desdeGrupos(groups)
+
+    /** Perfil que decide la navegación y el que se muestra en Perfil. */
+    val rolPrincipal: Rol = Rol.principal(roles)
+
+    /** Docente, Voluntario o Administrador: entra al inicio docente. */
+    val esPersonal: Boolean = rolPrincipal.esPersonal
 }
 

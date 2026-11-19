@@ -1,13 +1,11 @@
 ﻿package com.example.syncpassapp.feature.auth.ui
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.syncpassapp.feature.auth.data.AuthRepository
 import com.example.syncpassapp.core.database.repository.UniversidadRepository
-import com.example.syncpassapp.feature.notificaciones.NotificationService
+import com.example.syncpassapp.feature.auth.data.AuthRepository
+import com.example.syncpassapp.feature.notificaciones.data.NotificacionesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,7 +33,7 @@ sealed class SesionRestaurada {
 class SesionViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val universidadRepository: UniversidadRepository,
-    @ApplicationContext private val context: Context
+    private val notificacionesRepository: NotificacionesRepository
 ) : ViewModel() {
 
     private val _sesion = MutableStateFlow<SesionRestaurada>(SesionRestaurada.Verificando)
@@ -49,29 +47,21 @@ class SesionViewModel @Inject constructor(
 
     private suspend fun restaurarSesion(): SesionRestaurada {
         val userInfo = authRepository.getUserInfo()
-            ?: run {
-                NotificationService.stop(context)
-                return SesionRestaurada.SinSesion
-            }
+        val usuarioLocal = userInfo
+            ?.takeUnless { authRepository.isTokenExpired() }
+            ?.let { universidadRepository.buscarUsuarioPorEmail(it.email ?: "") }
 
-        if (authRepository.isTokenExpired()) {
-            NotificationService.stop(context)
+        if (userInfo == null || usuarioLocal == null) {
+            notificacionesRepository.desactivar()
             return SesionRestaurada.SinSesion
         }
 
-        val usuarioLocal = universidadRepository.buscarUsuarioPorEmail(userInfo.email ?: "")
-            ?: run {
-                NotificationService.stop(context)
-                return SesionRestaurada.SinSesion
-            }
+        notificacionesRepository.activarPara(userInfo.email)
 
-        NotificationService.start(context, userInfo.email)
-
-        val esProfesor = userInfo.isProfesor || userInfo.isAdmin
+        // Docente, Voluntario y Administrador vuelven al inicio docente.
         return SesionRestaurada.ConSesion(
             usuarioId = usuarioLocal.usuario.usuarioId,
-            esEstudiante = !esProfesor
+            esEstudiante = !userInfo.esPersonal
         )
     }
 }
-

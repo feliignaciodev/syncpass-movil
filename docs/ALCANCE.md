@@ -4,11 +4,11 @@
 
 | ID | Descripción | Estado |
 |---|---|---|
-| RF-01 | Login con email/contraseña contra Cognito | Implementado |
+| RF-01 | Login con email/contraseña (el backend autentica contra Cognito) | Implementado |
 | RF-02 | Registro y confirmación de código | Implementado (sin vista de confirmación dedicada) |
 | RF-03 | Restauración de sesión y logout | Implementado |
-| RF-04 | Crear/editar/finalizar clases (docente) | Implementado (local) |
-| RF-05 | Inscribir estudiantes en una clase | Implementado (local) |
+| RF-04 | Crear/editar clases y filtrarlas por estado (docente) | Implementado (local); el estado se elige al crear, la edición no lo cambia |
+| RF-05 | Inscribir estudiantes en una clase | Parcial (local): sin pantalla propia; se inscribe al escanear el QR o al responder el cuestionario |
 | RF-06 | Escanear QR de clase (cámara) | Implementado |
 | RF-07 | Registrar asistencia presente/ausente | Implementado (local) |
 | RF-08 | Cuestionario por clase (solo si presente) | Implementado |
@@ -18,28 +18,32 @@
 | RF-12 | Notificaciones push (ntfy/FCM) | Parcial |
 | RF-13 | Perfil y QR de estudiante | Implementado |
 | RF-14 | Geolocalización | **Backlog (no implementado)** |
+| RF-15 | Perfiles Estudiante, Docente, Voluntario y Administrador con navegación por rol | Implementado (`core/common/auth/Rol`, §6) |
 
 ## 2. Requerimientos No Funcionales (RNF)
 
 | ID | Descripción |
 |---|---|
 | RNF-01 | Lenguaje Kotlin íntegramente. |
-| RNF-02 | Arquitectura MVVM con separación de capas. |
+| RNF-02 | Arquitectura MVVM en capas: Screen → ViewModel → Repository → DataSource → Room/DataStore/Retrofit. |
 | RNF-03 | Persistencia local offline-first (Room). |
 | RNF-04 | Sincronización explícita (botón) y reintento automático al recuperar red. |
-| RNF-05 | Al menos 2 APIs nativas (cámara/QR, notificaciones). |
-| RNF-06 | Pruebas unitarias + cobertura mínima 30% (JaCoCo). |
+| RNF-05 | Al menos 2 APIs nativas (cámara/QR, notificaciones, estado de red). |
+| RNF-06 | Pruebas unitarias + cobertura mínima 30 % verificable (`./gradlew jacocoTestCoverageVerification`). |
 | RNF-07 | Documentación C4 y alcance. |
 | RNF-08 | Coherencia entre docs e implementación. |
 
 ## 3. Casos de uso principales
 
 ### CU-01 Login
-- Actor: Docente/Estudiante.
-- Flujo: ingresar credenciales → Cognito → guardar token en DataStore → navegar a home según rol.
+- Actor: Estudiante, Docente, Voluntario o Administrador.
+- Flujo: ingresar credenciales → `POST /api/auth/login` (el backend autentica contra Cognito) → guardar token en DataStore → navegar al inicio según el rol: Docente, Voluntario y Administrador al inicio docente; Estudiante al inicio de estudiante.
+- Alternativo: campos vacíos o credenciales inválidas → mensaje de error, sin navegar.
 
-### CU-02 Crear clase (docente)
-- Flujo: nombre, descripción, cuestionario JSON, estado → Room → listado filtrable.
+### CU-02 Crear clase (docente, modelo local)
+- Actor: Docente, Voluntario o Administrador (inicio docente).
+- Flujo: nombre, descripción, cuestionario JSON, estado → Room → listado filtrable por estado (Todos, En curso, Finalizados).
+- Nota: las clases son del **modelo local** del teléfono (no se envían al backend). Lo que se sincroniza con el backend son las asistencias y encuestas del catálogo SyncPass (CU-04).
 
 ### CU-03 Registrar asistencia (online local)
 - Flujo: escanear QR de clase → marcar presente/ausente → guardar respuestas si presente.
@@ -61,6 +65,7 @@
 | Funcionalidad | Estado |
 |---|---|
 | Auth (login/registro) | Implementado |
+| Roles de la rúbrica y navegación por rol | Implementado |
 | Clases (CRUD local) | Implementado |
 | Asistencia local | Implementado |
 | Cámara/QR | Implementado |
@@ -69,15 +74,15 @@
 | Registro offline con catálogo remoto + botón/reintento automático | Implementado (no reemplaza el modelo local de clases; sin migración Room) |
 | Geolocalización | Backlog |
 | C4 / alcance / mockups | Implementado (este directorio) |
-| Tests + JaCoCo ≥30% | Parcial (36 tests, reporte disponible) |
+| Tests + JaCoCo ≥30 % | Implementado: 84 pruebas JVM, **50,0 % de líneas** (`./gradlew jacocoTestReport`) |
 
-## 6. Equivalencia de roles con backend
+## 6. Equivalencia de roles (rúbrica ↔ Cognito ↔ app)
 
-| Rol app (Cognito) | Rol backend |
-|---|---|
-| ADMINISTRADOR | ADMINISTRADOR |
-| COORDINADOR (docente) | COORDINADOR |
-| VOLUNTARIO | VOLUNTARIO |
-| BENEFICIARIO (estudiante) | BENEFICIARIO |
+| Perfil (rúbrica) | Grupo Cognito / backend | `Rol` en la app | Inicio en la app |
+|---|---|---|---|
+| Estudiante | `BENEFICIARIO` | `ESTUDIANTE` | Inicio estudiante |
+| Docente | `COORDINADOR` | `DOCENTE` | Inicio docente |
+| Voluntario | `VOLUNTARIO` | `VOLUNTARIO` | Inicio docente |
+| Administrador | `ADMINISTRADOR` | `ADMINISTRADOR` | Inicio docente |
 
 `TipoParticipante.ESTUDIANTE/DOCENTE` del backend clasifica asistentes, no es autorización Cognito.

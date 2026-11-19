@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    jacoco
 }
 
 android {
@@ -39,7 +40,8 @@ android {
         }
         debug {
             buildConfigField("String", "API_BASE_URL", "\"https://syncpass.duckdns.org/\"")
-            // Genera build/outputs/jacoco/testDebugUnitTest.exec para los tests JVM.
+            // La cobertura de los tests JVM la mide el plugin `jacoco` de Gradle
+            // (tareas jacocoTestReport y jacocoTestCoverageVerification, al final del archivo).
             enableUnitTestCoverage = false
         }
     }
@@ -159,16 +161,57 @@ val clasesCobertura = files(
     }
 )
 val ejecucionCobertura = fileTree(raizBuildCobertura) {
-    include("outputs/jacoco/**/*.exec")
-    include("jacoco/**/*.exec")
+    include("jacoco/testDebugUnitTest.exec")
 }
 
+jacoco {
+    // Misma versión que usa AGP 8.8 por defecto.
+    toolVersion = "0.8.12"
+}
 
-
-
-
-
-
+// El plugin `jacoco` agrega su agente a cada tarea Test y escribe
+// build/jacoco/<tarea>.exec con rutas relativas al proyecto: funciona en cualquier PC.
 tasks.withType<Test>().configureEach {
-    jvmArgs("-javaagent:C:/Users/felip/.m2/repository/org/jacoco/org.jacoco.agent/0.8.16/org.jacoco.agent-0.8.16-runtime.jar=destfile=C:/Src/syncpass-movil/app/build/jacoco/testDebugUnitTest.exec,append=false,dumponexit=true,output=file,jmx=false,excludes=jdk.*:sun.*:java.*:javax.*:com.sun.*")
+    extensions.configure<JacocoTaskExtension> {
+        isIncludeNoLocationClasses = false
+        // Clases del propio JDK: no son código de la app y JaCoCo no debe instrumentarlas
+        // (con JDK recientes, como el JBR 25 de Android Studio, generan avisos).
+        excludes = listOf("jdk.*", "sun.*", "java.*", "javax.*", "com.sun.*", "org.jcp.*")
+    }
+}
+
+// ./gradlew jacocoTestReport
+//   → app/build/reports/jacoco/jacocoTestReport/html/index.html (y .xml)
+val jacocoTestReport = tasks.register<JacocoReport>("jacocoTestReport") {
+    group = "verification"
+    description = "Reporte de cobertura de los tests JVM (testDebugUnitTest)."
+    dependsOn("testDebugUnitTest")
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+    sourceDirectories.setFrom(fuentesCobertura)
+    classDirectories.setFrom(clasesCobertura)
+    executionData.setFrom(ejecucionCobertura)
+}
+
+// ./gradlew jacocoTestCoverageVerification
+//   → falla si la cobertura de líneas baja del 30 % (mínimo exigido por la rúbrica).
+tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    group = "verification"
+    description = "Verifica la cobertura mínima de líneas (30 %)."
+    dependsOn(jacocoTestReport)
+    sourceDirectories.setFrom(fuentesCobertura)
+    classDirectories.setFrom(clasesCobertura)
+    executionData.setFrom(ejecucionCobertura)
+    violationRules {
+        rule {
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.30".toBigDecimal()
+            }
+        }
+    }
 }

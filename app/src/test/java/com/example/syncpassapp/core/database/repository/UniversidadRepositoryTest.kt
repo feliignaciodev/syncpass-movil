@@ -1,4 +1,5 @@
 package com.example.syncpassapp.core.database.repository
+import com.example.syncpassapp.core.datasource.local.UniversidadLocalDataSource
 
 import com.example.syncpassapp.core.database.local.entities.ClaseEntity
 import com.example.syncpassapp.core.database.local.model.UsuarioConRoles
@@ -22,7 +23,7 @@ class UniversidadRepositoryTest {
     @Before
     fun setUp() {
         dao = FakeUniversidadDao()
-        repository = UniversidadRepository(dao)
+        repository = UniversidadRepository(UniversidadLocalDataSource(dao))
     }
 
     private suspend fun crearClase(profesorId: Long = 10L): Long = repository.crearClase(

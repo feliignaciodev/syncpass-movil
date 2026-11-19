@@ -1,5 +1,13 @@
 # Requerimientos iniciales — Disco
 
+> **Nota (SyncPass):** este es el caso de estudio base entregado en la asignatura
+> ("Disco"), del que partió el modelo local de clases, asistencia y cuestionario de
+> la app. Se conserva como referencia histórica. Los nombres "Disco" y
+> `com.rojas.disco` son los del caso original; la app se llama SyncPass y su
+> paquete es `com.example.syncpassapp`. **El alcance vigente está en
+> [`ALCANCE.md`](ALCANCE.md)** y la implementación real en
+> [`ARQUITECTURA.md`](ARQUITECTURA.md).
+
 Documento de referencia funcional y técnica del caso **Disco**, pensado para:
 
 - entender el problema y sus flujos principales;

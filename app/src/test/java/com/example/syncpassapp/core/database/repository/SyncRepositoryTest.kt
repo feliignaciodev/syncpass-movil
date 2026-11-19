@@ -1,4 +1,6 @@
 package com.example.syncpassapp.core.database.repository
+import com.example.syncpassapp.core.datasource.local.SyncLocalDataSource
+import com.example.syncpassapp.core.datasource.remote.SyncRemoteDataSource
 
 import com.example.syncpassapp.core.database.local.database.SyncPassDao
 import com.example.syncpassapp.core.database.local.entities.AsistenciaEntity
@@ -37,7 +39,7 @@ class SyncRepositoryTest {
     fun `sin pendientes no hace llamada HTTP`() = runTest {
         val dao = FakeSyncPassDao()
         val api = FakeSyncApi()
-        val repository = SyncRepository(api, dao)
+        val repository = SyncRepository(SyncRemoteDataSource(api), SyncLocalDataSource(dao))
 
         val result = repository.sincronizarPendientes()
 
@@ -56,7 +58,7 @@ class SyncRepositoryTest {
             aceptados = listOf("uuid-1"), duplicados = emptyList(),
             rechazados = emptyList(), serverTime = 2L
         )
-        val repository = SyncRepository(api, dao)
+        val repository = SyncRepository(SyncRemoteDataSource(api), SyncLocalDataSource(dao))
 
         val result = repository.sincronizarPendientes()
 
@@ -70,7 +72,7 @@ class SyncRepositoryTest {
         dao.insertAsistencia(nuevaAsistencia("uuid-2"))
         val api = FakeSyncApi()
         api.errorAsistencias = RuntimeException("sin red")
-        val repository = SyncRepository(api, dao)
+        val repository = SyncRepository(SyncRemoteDataSource(api), SyncLocalDataSource(dao))
 
         val result = repository.sincronizarPendientes()
 
@@ -82,7 +84,7 @@ class SyncRepositoryTest {
     fun `registrarAsistenciaLocal inserta pendiente`() = runTest {
         val dao = FakeSyncPassDao()
         val api = FakeSyncApi()
-        val repository = SyncRepository(api, dao)
+        val repository = SyncRepository(SyncRemoteDataSource(api), SyncLocalDataSource(dao))
         val asistencia = nuevaAsistencia("uuid-3")
 
         repository.registrarAsistenciaLocal(asistencia)
@@ -111,7 +113,7 @@ class SyncRepositoryTest {
                 eventoId = 10L, participanteId = "P1", estado = "INSCRITO"
             ))
         )
-        val repository = SyncRepository(api, dao)
+        val repository = SyncRepository(SyncRemoteDataSource(api), SyncLocalDataSource(dao))
 
         val result = repository.descargarYGuardarCatalogo()
 
@@ -135,7 +137,7 @@ class SyncRepositoryTest {
         api.resultadoEncuestas = ResultadoSyncResponse(
             aceptados = emptyList(), duplicados = listOf("e-1"), rechazados = emptyList(), serverTime = 2L
         )
-        val repository = SyncRepository(api, dao)
+        val repository = SyncRepository(SyncRemoteDataSource(api), SyncLocalDataSource(dao))
 
         val result = repository.sincronizarPendientes()
 
