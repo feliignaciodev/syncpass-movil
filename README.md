@@ -96,8 +96,10 @@ Reiniciar la EC2 no debería requerir recompilar ni reinstalar la app si se cons
 
 ## Qué funciona sin conexión
 
-- Room y `SyncRepository` incluyen almacenamiento y métodos para asistencias/encuestas pendientes. Sin embargo, en el código actual no encontré pantallas o tareas que invoquen esos métodos; **no asumas que la captura offline o el envío automático al recuperar conexión estén completos**.
-- Para iniciar sesión, obtener el catálogo y comunicarse con el backend se necesita conectividad. Antes de usar la app en una actividad sin Internet, verifica el flujo offline en el dispositivo y confirma cómo se conservarán y enviarán los registros.
+- **Captura offline implementada:** `DialogRegistrarAsistenciaOffline` permite elegir evento y participante del catálogo descargado y guarda la asistencia en Room con `sincronizado=false` (`SyncRepository` → `SyncPassDao`). El cuestionario también se guarda localmente.
+- **Sincronización explícita:** el botón «Sincronizar pendientes» de `ProfileScreen` llama a `SyncViewModel` → `SyncRepository`, que envía lotes de hasta 500 registros a `POST /api/sync/asistencias` y `/api/sync/encuestas`. Los UUID se generan en el dispositivo y el backend marca duplicados, por lo que reintentar no duplica asistencias.
+- **Reintento automático:** `SyncPassApplication` registra un `ConnectivityManager.NetworkCallback` y vuelve a sincronizar cuando vuelve la red (mientras el proceso esté vivo; no hay WorkManager para app cerrada).
+- Para **iniciar sesión y descargar el catálogo** sí se necesita conectividad: hazlo una vez con Internet antes de entrar en modo avión.
 - No desinstales ni borres los datos de la app si necesitas conservar datos locales; eso elimina la base Room del dispositivo.
 
 ## Seguridad y configuración
