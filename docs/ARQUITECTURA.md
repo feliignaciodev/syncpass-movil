@@ -185,12 +185,18 @@ La manual está en `feature/sync/ui/SyncViewModel` + sección "Sincronización" 
 
 > **Geolocalización NO está implementada.** Los campos `latitud`/`longitud`/`distanciaMetros` en DTOs/entidades no constituyen integración de geolocalización.
 
-## 6. Estado de la nube
-- Supabase/EC2/Cognito/Parameter Store/FCM: código y scripts preparados en el backend; la disponibilidad se comprueba al levantar el Learner Lab (`/api/health`).
+## 6. Estado de la nube (verificado 20-11-2026)
+- ✅ Supabase: conexión OK (Session Pooler, región us-east-2). Flyway V1/V2/V3 aplicadas.
+- ✅ EC2: Spring Boot corriendo (Java 21, Ubuntu 26.04). Health check UP.
+- ✅ Nginx + HTTPS (Certbot): reverse proxy funcionando.
+- ✅ Cognito: login real exitoso (BENEFICIARIO y COORDINADOR). Token JWT válido.
+- ✅ Sync E2E: catálogo (3 proyectos, 6 eventos, 42 participantes, 116 inscripciones) + asistencia aceptada + idempotencia.
+- ✅ CORS: `Access-Control-Allow-Origin: https://fullstack2-proyecto-kt.vercel.app`.
+- ✅ Front en Vercel: `https://fullstack2-proyecto-kt.vercel.app` (HTTP 200, `/api` rewrite → EC2).
 - No hay API Gateway desplegado (nginx cumple el rol de proxy).
 - No hay endpoint de refresh de token.
 - Notificaciones: historial devuelve `[]`; recordatorios pueden duplicarse; envío a todos los dispositivos activos.
-- Datos semilla (`syncpass.datos-semilla=true`) por defecto.
+- Datos semilla desactivados en producción (`SYNCPASS_DATOS_SEMILLA=false`).
 
 ## 7. Pruebas y cobertura
 - 84 pruebas JVM (`app/src/test`) con *fakes* de DAOs, APIs, sesión y notificaciones (sin emulador): repositorios, datasources (a través de los repositorios), ViewModels (`Login`, `Sesion`, `Profile`, `Sync`, `TeacherHome`), roles, QR y navegación.

@@ -30,7 +30,7 @@
 ## 2. Pendiente / Backlog
 - [ ] Integrar la sincronización remota con el flujo local de `SessionScreen` (hoy existe un registro offline real separado que usa el catálogo remoto desde Perfil; unificar ambos modelos sería una migración controlada).
 - [x] Tests: 84 tests JVM, cobertura JaCoCo **50,0 % de líneas** (alcance: lógica de negocio; Compose/UI excluida). Reporte portable: `./gradlew jacocoTestReport` → `app/build/reports/jacoco/jacocoTestReport/html/index.html`; mínimo verificable con `./gradlew jacocoTestCoverageVerification`.
-- [ ] Verificación real de Supabase/EC2/Cognito y E2E Android.
+- [x] Verificación real de Supabase/EC2/Cognito y E2E Android (20-11-2026): health UP, login real OK, sync E2E OK (catálogo + asistencia aceptada + idempotencia).
 - [ ] Notificaciones: historial persistido, deduplicación de recordatorios, credenciales FCM.
 - [ ] Refresh de token automático (actualmente `TokenAuthenticator` borra tokens ante 401).
 
