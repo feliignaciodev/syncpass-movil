@@ -19,9 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.syncpassapp.core.common.location.CoordenadasDefault
+import com.example.syncpassapp.core.common.location.LocationHelper
 import com.example.syncpassapp.core.database.local.entities.ProyectoEntity
-import com.example.syncpassapp.core.designsystem.theme.PastelBlue
-import com.example.syncpassapp.core.designsystem.theme.PastelGreen
 
 /**
  * Diálogo de detalle estructurado para un curso descargado del servidor.
@@ -59,6 +59,9 @@ fun DialogDetalleCurso(
                 // Fechas
                 DetailRow(label = "Fecha inicio", value = curso.fechaInicio)
                 DetailRow(label = "Fecha término", value = curso.fechaTermino)
+
+                // Coordenada predeterminada usada para geolocalización
+                DetailRow(label = "Coordenada predeterminada", value = CoordenadasDefault.NOMBRE)
 
                 // ID
                 DetailRow(label = "ID del curso", value = curso.id.toString())
