@@ -98,15 +98,19 @@ fun ProfileScreen(
                         fontWeight = FontWeight.Bold
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    // El QR de estudiante solo tiene sentido para el perfil Estudiante
+                    if (uiState.rol == com.example.syncpassapp.core.common.auth.Rol.ESTUDIANTE
+                        || info.roles.any { it.nombreRol == "Estudiante" }) {
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    OutlinedButton(
-                        onClick = { showDialogQrEstudiante = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(imageVector = Icons.Default.Share, contentDescription = null)
-                        Spacer(modifier = Modifier.padding(4.dp))
-                        Text("Mi Código QR de Estudiante")
+                        OutlinedButton(
+                            onClick = { showDialogQrEstudiante = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(imageVector = Icons.Default.Share, contentDescription = null)
+                            Spacer(modifier = Modifier.padding(4.dp))
+                            Text("Mi Código QR de Estudiante")
+                        }
                     }
                 }
             }

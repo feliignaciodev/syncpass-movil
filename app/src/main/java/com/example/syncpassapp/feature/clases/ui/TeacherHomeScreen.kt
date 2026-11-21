@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,7 +38,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.syncpassapp.core.common.qr.CodigoQr
+import com.example.syncpassapp.core.designsystem.components.DialogEscanearQr
 import com.example.syncpassapp.core.designsystem.components.EstadoVacio
 import com.example.syncpassapp.core.designsystem.components.TarjetaClase
 import com.example.syncpassapp.core.designsystem.components.SeccionHeader
@@ -58,7 +63,10 @@ fun TeacherHomeScreen(
     val creandoCurso by cursosRemotosViewModel.creando.collectAsState()
     val mensajeCursos by cursosRemotosViewModel.mensaje.collectAsState()
     var showDialogCrearClase by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     var showDialogCrearCursoRemoto by remember { mutableStateOf(false) }
+    var showDialogEscanearEstudiante by remember { mutableStateOf(false) }
+    var estudianteEscaneado by remember { mutableStateOf<Long?>(null) }
     var cursoSeleccionado by remember { mutableStateOf<com.example.syncpassapp.core.database.local.entities.ProyectoEntity?>(null) }
 
     Scaffold(
@@ -79,17 +87,29 @@ fun TeacherHomeScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            Text(
-                text = "Panel Docente",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = "Gestión de clases y eventos SyncPass",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Panel Docente",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Gestión de clases y eventos SyncPass",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                OutlinedButton(onClick = { showDialogEscanearEstudiante = true }) {
+                    Icon(imageVector = Icons.Default.Person, contentDescription = null)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Escanear QR")
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -247,6 +267,44 @@ fun TeacherHomeScreen(
             DialogDetalleCurso(
                 curso = curso,
                 onDismiss = { cursoSeleccionado = null }
+            )
+        }
+
+        if (showDialogEscanearEstudiante) {
+            DialogEscanearQr(
+                titulo = "Escanear QR de Estudiante",
+                prompt = "Apunta la cámara al código QR que muestra el estudiante en su perfil.",
+                valorSugeridoQr = CodigoQr.Estudiante.generar(2L),
+                onDismiss = { showDialogEscanearEstudiante = false },
+                onQrEscaneado = { codigoEscaneado ->
+                    val estudianteId = CodigoQr.Estudiante.leer(codigoEscaneado)
+                    if (estudianteId != null) {
+                        // Marcar presente en la primera clase disponible
+                        val primeraClase = uiState.clases.firstOrNull()
+                        if (primeraClase != null) {
+                            viewModel.marcarEstudiantePresente(primeraClase.claseId, estudianteId) {
+                                Toast.makeText(
+                                    context,
+                                    "Estudiante $estudianteId marcado como PRESENTE en ${primeraClase.nombre}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "No hay clases creadas. Crea una clase primero.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        showDialogEscanearEstudiante = false
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Código QR inválido. Formato esperado: ${CodigoQr.Estudiante.formato}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             )
         }
 

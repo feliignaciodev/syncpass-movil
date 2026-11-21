@@ -35,6 +35,14 @@ class TeacherHomeViewModelTest {
     private fun viewModel(profesorId: Long = 10L): TeacherHomeViewModel =
         TeacherHomeViewModel(
             repository,
+            com.example.syncpassapp.core.database.repository.SyncRepository(
+                com.example.syncpassapp.core.datasource.remote.SyncRemoteDataSource(
+                    com.example.syncpassapp.util.FakeSyncApi()
+                ),
+                com.example.syncpassapp.core.datasource.local.SyncLocalDataSource(
+                    com.example.syncpassapp.util.FakeSyncPassDao()
+                )
+            ),
             SavedStateHandle(mapOf("profesorId" to profesorId))
         )
 
@@ -106,5 +114,16 @@ class TeacherHomeViewModelTest {
     }
 
     private fun viewModelSinId(): TeacherHomeViewModel =
-        TeacherHomeViewModel(repository, SavedStateHandle())
+        TeacherHomeViewModel(
+            repository,
+            com.example.syncpassapp.core.database.repository.SyncRepository(
+                com.example.syncpassapp.core.datasource.remote.SyncRemoteDataSource(
+                    com.example.syncpassapp.util.FakeSyncApi()
+                ),
+                com.example.syncpassapp.core.datasource.local.SyncLocalDataSource(
+                    com.example.syncpassapp.util.FakeSyncPassDao()
+                )
+            ),
+            SavedStateHandle()
+        )
 }

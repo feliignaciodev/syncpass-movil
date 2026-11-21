@@ -24,6 +24,7 @@ data class TeacherHomeUiState(
 @HiltViewModel
 class TeacherHomeViewModel @Inject constructor(
     private val repository: UniversidadRepository,
+    private val syncRepository: com.example.syncpassapp.core.database.repository.SyncRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -56,6 +57,39 @@ class TeacherHomeViewModel @Inject constructor(
 
     fun cambiarFiltro(filtro: String) {
         _filtroEstado.update { filtro }
+    }
+
+    fun marcarEstudiantePresente(claseId: Long, estudianteId: Long, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            repository.registrarAsistenciaYCuestionario(
+                usuarioId = estudianteId,
+                claseId = claseId,
+                esPresente = true,
+                respuestasJson = null
+            )
+            // Si la clase está vinculada a un evento remoto, también registrar en sync
+            val clase = repository.obtenerClasePorId(claseId)
+            val remoteEventoId = clase?.remoteEventoId
+            if (remoteEventoId != null) {
+                val asistencia = com.example.syncpassapp.core.database.local.entities.AsistenciaEntity(
+                    uuid = java.util.UUID.randomUUID().toString(),
+                    eventoId = remoteEventoId,
+                    participanteId = "W-$estudianteId",
+                    tipoParticipante = "ESTUDIANTE",
+                    timestamp = System.currentTimeMillis(),
+                    latitud = null,
+                    longitud = null,
+                    distanciaMetros = null,
+                    estadoValidacion = "SIN_UBICACION",
+                    inscritoEnSitio = true,
+                    registradoPor = null,
+                    dispositivoId = null,
+                    sincronizado = false
+                )
+                syncRepository.registrarAsistenciaLocal(asistencia)
+            }
+            onSuccess()
+        }
     }
 
     fun crearClase(nombre: String, descripcion: String, cuestionarioJson: String, estado: String, remoteEventoId: Long? = null) {
