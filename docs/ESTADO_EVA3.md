@@ -18,7 +18,12 @@
 - [x] Registro offline con evento/participante del catálogo y sincronización manual con botón (`SyncViewModel` + Perfil) y automática al recuperar red (`NetworkCallback` en la aplicación).
 - [x] Descarga de catálogo remoto.
 - [x] APIs nativas: cámara/QR (CameraX + ML Kit + ZXing) y notificaciones (ntfy/FCM parcial).
-- [ ] Geolocalización: **NO implementada** (declarada erróneamente como completa anteriormente).
+- [x] Geolocalización con coordenada predeterminada (Santiago -33.4489, -70.6693): cálculo de distancia Haversine, estado VALIDO/FUERA_DE_RADIO. Permisos declarados en manifest. GPS real queda como backlog (requiere Play Services).
+- [x] Descarga de cursos del servidor (botón "Descargar" + sección "Cursos del servidor" con detalles).
+- [x] Crear curso en servidor desde la app (botón "Crear" + diálogo, requiere rol ADMINISTRADOR o COORDINADOR).
+- [x] Vincular clase local con evento remoto (dropdown en DialogCrearClase).
+- [x] UI rediseñada (logo SyncPass, colores pasteles, bordes redondeados, diálogo de detalle de curso, secciones claras, se eliminaron demos).
+- [x] Tests: 84 pruebas JVM, 50 % cobertura (JaCoCo).
 
 ### C. Documentación
 - [x] `ARQUITECTURA.md` con C1/C2 (real, sin API Gateway)/C3.

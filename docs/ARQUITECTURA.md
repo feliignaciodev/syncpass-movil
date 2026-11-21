@@ -184,7 +184,7 @@ La manual está en `feature/sync/ui/SyncViewModel` + sección "Sincronización" 
 2. **Notificaciones + servicio en primer plano:** canales, `NotificationManager`, foreground service, SSE de ntfy, reconexión.
 3. **Estado de red:** `ConnectivityManager.NetworkCallback` para reintentar la sincronización al recuperar internet.
 
-> **Geolocalización NO está implementada.** Los campos `latitud`/`longitud`/`distanciaMetros` en DTOs/entidades no constituyen integración de geolocalización.
+> **Geolocalización con coordenada predeterminada implementada.** Se usa una coordenada fija (Santiago: -33.4489, -70.6693) para calcular la distancia Haversine al evento y determinar `estadoValidacion` (VALIDO/FUERA_DE_RADIO). Permisos `ACCESS_FINE_LOCATION` y `ACCESS_COARSE_LOCATION` declarados en el manifest. GPS real queda como backlog (requiere Play Services, no disponible offline).
 
 ## 6. Estado de la nube (verificado 20-11-2026)
 - ✅ Supabase: conexión OK (Session Pooler, región us-east-2). Flyway V1/V2/V3 aplicadas.

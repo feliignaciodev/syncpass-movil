@@ -84,7 +84,17 @@ Después de cambiar la URL, sincroniza Gradle y vuelve a instalar debug:
 .\gradlew.bat :app:installDebug
 ```
 
-## Qué funciona sin conexión
+## Nuevas funcionalidades (iteración 3)
+
+- **Descarga de cursos del servidor:** botón "Descargar" en Panel Docente trae los cursos creados en la web (admin) y los muestra con detalles (título, descripción, área, fechas, estado).
+- **Crear curso en servidor:** botón "Crear" en "Cursos del servidor" abre un formulario para crear cursos directamente en el backend (requiere rol ADMINISTRADOR o COORDINADOR).
+- **Vincular clase local con evento remoto:** al crear una clase local, se puede seleccionar un evento remoto del catálogo (dropdown). Al marcar asistencia, también se registra en `asistencias_offline` para sincronizar.
+- **Geolocalización con coordenada predeterminada:** usa Santiago (-33.4489, -70.6693) como coordenada fija. Calcula distancia Haversine al evento y determina estado (VALIDO/FUERA_DE_RADIO). Permisos declarados en manifest.
+- **UI rediseñada:** logo SyncPass con gradiente, paleta de colores pasteles (verde salvia, menta, crema), bordes redondeados (16dp), tarjetas con elevación suave, secciones con encabezados y líneas decorativas, diálogo de detalle de curso estructurado.
+- **Eliminados botones demo** (Demo Profesor / Demo Alumno) del login.
+- **URL del backend:** ahora apunta a Vercel (`https://fullstack2-proyecto-kt.vercel.app/`) que reenvía a EC2, eliminando la dependencia directa de duckdns (bloqueado por FortiGuard).
+
+## Qué funciona sin conexión:
 
 - **Captura offline implementada:** `DialogRegistrarAsistenciaOffline` permite elegir evento y participante del catálogo descargado y guarda la asistencia en Room con `sincronizado=false` (`SyncRepository` → `SyncPassDao`). El cuestionario también se guarda localmente.
 - **Sincronización explícita:** el botón "Sincronizar pendientes" de `ProfileScreen` llama a `SyncViewModel` → `SyncRepository`, que envía lotes de hasta 500 registros a `POST /api/sync/asistencias` y `/api/sync/encuestas`. Los UUID se generan en el dispositivo y el backend marca duplicados, por lo que reintentar no duplica asistencias.

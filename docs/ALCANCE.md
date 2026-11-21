@@ -11,6 +11,8 @@
 | RF-15 | Descargar cursos del servidor (web → app) | Implementado (botón "Descargar" en Panel Docente) |
 | RF-16 | Visualizar cursos remotos con detalles (fechas, área, estado) | Implementado (sección "Cursos del servidor") |
 | RF-17 | Crear curso en servidor desde la app | Implementado (botón "Crear" en "Cursos del servidor", requiere rol ADMINISTRADOR o COORDINADOR) |
+| RF-18 | Geolocalización con coordenada predeterminada | Implementado (Santiago -33.4489, -70.6693; cálculo de distancia Haversine; estado VALIDO/FUERA_DE_RADIO) |
+| RF-19 | Vincular clase local con evento remoto | Implementado (dropdown en DialogCrearClase; al marcar asistencia también registra en asistencias_offline) |
 | RF-05 | Inscribir estudiantes en una clase | Parcial (local): sin pantalla propia; se inscribe al escanear el QR o al responder el cuestionario |
 | RF-06 | Escanear QR de clase (cámara) | Implementado |
 | RF-07 | Registrar asistencia presente/ausente | Implementado (local) |
@@ -78,7 +80,10 @@
 | Descarga de cursos del servidor (web → app) | Implementado (botón "Descargar" en Panel Docente) |
 | Visualización de cursos remotos con detalles | Implementado (título, descripción, área, fechas, estado) |
 | Crear curso en servidor desde la app | Backlog (requiere rol ADMINISTRADOR) |
-| Geolocalización | Backlog |
+| Geolocalización con coordenada predeterminada | Implementado (Santiago; cálculo Haversine; estado VALIDO/FUERA_DE_RADIO) |
+| Crear curso en servidor desde la app | Implementado (botón "Crear", requiere rol ADMINISTRADOR o COORDINADOR) |
+| Vincular clase local con evento remoto | Implementado (dropdown en DialogCrearClase) |
+| Geolocalización con GPS real | Backlog (requiere Play Services; no cached offline) |
 | C4 / alcance / mockups | Implementado (este directorio) |
 | Tests + JaCoCo ≥30 % | Implementado: 84 pruebas JVM, **50,0 % de líneas** (`./gradlew jacocoTestReport`) |
 
