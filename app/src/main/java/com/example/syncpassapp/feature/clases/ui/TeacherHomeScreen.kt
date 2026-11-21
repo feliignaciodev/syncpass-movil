@@ -270,9 +270,10 @@ fun TeacherHomeScreen(
 
         if (showDialogCrearClase) {
             DialogCrearClase(
+                eventos = cursosRemotosViewModel.eventos.collectAsState().value,
                 onDismiss = { showDialogCrearClase = false },
-                onClaseCreada = { nombre, descripcion, cuestionarioJson, estado ->
-                    viewModel.crearClase(nombre, descripcion, cuestionarioJson, estado)
+                onClaseCreada = { nombre, descripcion, cuestionarioJson, estado, remoteEventoId ->
+                    viewModel.crearClase(nombre, descripcion, cuestionarioJson, estado, remoteEventoId)
                     showDialogCrearClase = false
                 }
             )
@@ -280,10 +281,12 @@ fun TeacherHomeScreen(
     }
 }
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun DialogCrearClase(
+    eventos: List<com.example.syncpassapp.core.database.local.entities.EventoEntity> = emptyList(),
     onDismiss: () -> Unit,
-    onClaseCreada: (String, String, String, String) -> Unit
+    onClaseCreada: (String, String, String, String, Long?) -> Unit
 ) {
     var nombre by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
@@ -291,6 +294,8 @@ fun DialogCrearClase(
     var cuestionarioJson by remember {
         mutableStateOf("{\"preguntas\":[\"¿Asististe a la clase?\", \"¿Tienes alguna duda?\"]}")
     }
+    var eventoSeleccionado by remember { mutableStateOf<com.example.syncpassapp.core.database.local.entities.EventoEntity?>(null) }
+    var expandedEvento by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -310,6 +315,46 @@ fun DialogCrearClase(
                     label = { Text("Descripción") },
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                // Selector de evento remoto (opcional, para vincular con el backend)
+                if (eventos.isNotEmpty()) {
+                    Text("Vincular con evento remoto (opcional):", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                    androidx.compose.material3.ExposedDropdownMenuBox(
+                        expanded = expandedEvento,
+                        onExpandedChange = { expandedEvento = it }
+                    ) {
+                        OutlinedTextField(
+                            value = eventoSeleccionado?.nombre ?: "Sin vincular",
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = { androidx.compose.material3.ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEvento) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expandedEvento,
+                            onDismissRequest = { expandedEvento = false }
+                        ) {
+                            androidx.compose.material3.DropdownMenuItem(
+                                text = { Text("Sin vincular") },
+                                onClick = {
+                                    eventoSeleccionado = null
+                                    expandedEvento = false
+                                }
+                            )
+                            eventos.forEach { evento ->
+                                androidx.compose.material3.DropdownMenuItem(
+                                    text = { Text(evento.nombre) },
+                                    onClick = {
+                                        eventoSeleccionado = evento
+                                        expandedEvento = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
 
                 Text("Estado Inicial:", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -338,7 +383,7 @@ fun DialogCrearClase(
             Button(
                 enabled = nombre.isNotBlank(),
                 onClick = {
-                    onClaseCreada(nombre, descripcion, cuestionarioJson, estadoSeleccionado)
+                    onClaseCreada(nombre, descripcion, cuestionarioJson, estadoSeleccionado, eventoSeleccionado?.id)
                 }
             ) {
                 Text("Crear")

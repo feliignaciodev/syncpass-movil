@@ -26,5 +26,8 @@ data class ClaseEntity(
     val descripcion: String,
     val profesorId: Long, // ID del usuario que imparte la clase como profesor
     val cuestionarioEstructuraJson: String, // Estructura/preguntas del cuestionario para esta clase en JSON
-    val estado: String = "EN_CURSO" // "EN_CURSO" o "FINALIZADO"
+    val estado: String = "EN_CURSO", // "EN_CURSO" o "FINALIZADO"
+    // ID del evento remoto (backend) vinculado a esta clase. Null si no hay vínculo.
+    // Permite sincronizar la asistencia local con el backend sin pérdida de datos.
+    val remoteEventoId: Long? = null
 )

@@ -2,6 +2,7 @@ package com.example.syncpassapp.feature.sync.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.syncpassapp.core.database.local.entities.EventoEntity
 import com.example.syncpassapp.core.database.local.entities.ProyectoEntity
 import com.example.syncpassapp.core.database.repository.SyncRepository
 import com.example.syncpassapp.core.datasource.remote.CursoRemoteDataSource
@@ -25,6 +26,13 @@ class CursosRemotosViewModel @Inject constructor(
 ) : ViewModel() {
 
     val cursos: StateFlow<List<ProyectoEntity>> = syncRepository.obtenerCursosRemotos()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val eventos: StateFlow<List<EventoEntity>> = syncRepository.obtenerEventosLocales()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),

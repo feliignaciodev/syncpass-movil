@@ -58,14 +58,15 @@ class TeacherHomeViewModel @Inject constructor(
         _filtroEstado.update { filtro }
     }
 
-    fun crearClase(nombre: String, descripcion: String, cuestionarioJson: String, estado: String) {
+    fun crearClase(nombre: String, descripcion: String, cuestionarioJson: String, estado: String, remoteEventoId: Long? = null) {
         viewModelScope.launch {
             val nuevaClase = ClaseEntity(
                 nombre = nombre,
                 descripcion = descripcion,
                 profesorId = profesorId,
                 cuestionarioEstructuraJson = cuestionarioJson,
-                estado = estado
+                estado = estado,
+                remoteEventoId = remoteEventoId
             )
             repository.crearClase(nuevaClase)
         }

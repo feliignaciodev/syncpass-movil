@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.syncpassapp.core.database.local.entities.AsistenciaClaseEntity
 import com.example.syncpassapp.core.database.local.entities.AsistenciaEntity
 import com.example.syncpassapp.core.database.local.entities.ClaseEntity
@@ -30,7 +32,7 @@ import com.example.syncpassapp.core.database.local.entities.UsuarioRolCrossRef
         AsistenciaEntity::class,
         EncuestaEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,6 +44,13 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
+        /** Migración 3 → 4: agrega columna remoteEventoId (nullable) a la tabla clases. */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE clases ADD COLUMN remote_evento_id INTEGER")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -49,6 +58,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "syncpass_database"
                 )
+                    .addMigrations(MIGRATION_3_4)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
