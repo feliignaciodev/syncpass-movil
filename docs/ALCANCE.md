@@ -8,6 +8,9 @@
 | RF-02 | Registro y confirmación de código | Implementado (sin vista de confirmación dedicada) |
 | RF-03 | Restauración de sesión y logout | Implementado |
 | RF-04 | Crear/editar clases y filtrarlas por estado (docente) | Implementado (local); el estado se elige al crear, la edición no lo cambia |
+| RF-15 | Descargar cursos del servidor (web → app) | Implementado (botón "Descargar" en Panel Docente) |
+| RF-16 | Visualizar cursos remotos con detalles (fechas, área, estado) | Implementado (sección "Cursos del servidor") |
+| RF-17 | Crear curso en servidor desde la app | Backlog (requiere rol ADMINISTRADOR) |
 | RF-05 | Inscribir estudiantes en una clase | Parcial (local): sin pantalla propia; se inscribe al escanear el QR o al responder el cuestionario |
 | RF-06 | Escanear QR de clase (cámara) | Implementado |
 | RF-07 | Registrar asistencia presente/ausente | Implementado (local) |
@@ -72,6 +75,9 @@
 | Notificaciones | Parcial |
 | Offline sync (infra + botón) | Implementado |
 | Registro offline con catálogo remoto + botón/reintento automático | Implementado (no reemplaza el modelo local de clases; sin migración Room) |
+| Descarga de cursos del servidor (web → app) | Implementado (botón "Descargar" en Panel Docente) |
+| Visualización de cursos remotos con detalles | Implementado (título, descripción, área, fechas, estado) |
+| Crear curso en servidor desde la app | Backlog (requiere rol ADMINISTRADOR) |
 | Geolocalización | Backlog |
 | C4 / alcance / mockups | Implementado (este directorio) |
 | Tests + JaCoCo ≥30 % | Implementado: 84 pruebas JVM, **50,0 % de líneas** (`./gradlew jacocoTestReport`) |

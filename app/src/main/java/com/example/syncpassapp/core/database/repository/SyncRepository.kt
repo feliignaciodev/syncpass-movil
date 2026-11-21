@@ -208,4 +208,7 @@ class SyncRepository @Inject constructor(
     fun obtenerEventosLocales(): Flow<List<EventoEntity>> = local.eventos()
 
     fun obtenerParticipantesLocales(): Flow<List<ParticipanteEntity>> = local.participantes()
+
+    /** Cursos (proyectos) remotos descargados desde el backend. */
+    fun obtenerCursosRemotos(): Flow<List<ProyectoEntity>> = local.proyectos()
 }

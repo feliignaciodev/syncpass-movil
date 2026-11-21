@@ -15,6 +15,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -37,14 +39,19 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.syncpassapp.core.designsystem.components.EstadoVacio
 import com.example.syncpassapp.core.designsystem.components.TarjetaClase
+import com.example.syncpassapp.feature.sync.ui.CursosRemotosViewModel
 
 
 @Composable
 fun TeacherHomeScreen(
     viewModel: TeacherHomeViewModel = hiltViewModel(),
+    cursosRemotosViewModel: CursosRemotosViewModel = hiltViewModel(),
     onNavigateToSession: (Long) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val cursosRemotos by cursosRemotosViewModel.cursos.collectAsState()
+    val descargandoCursos by cursosRemotosViewModel.descargando.collectAsState()
+    val mensajeCursos by cursosRemotosViewModel.mensaje.collectAsState()
     var showDialogCrearClase by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -134,6 +141,62 @@ fun TeacherHomeScreen(
                                     color = if (esEnCurso) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                                 )
                             }
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Cursos descargados del servidor (creados en la web/admin)
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Cursos del servidor",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                OutlinedButton(
+                    onClick = { cursosRemotosViewModel.descargar() },
+                    enabled = !descargandoCursos
+                ) {
+                    if (descargandoCursos) {
+                        CircularProgressIndicator(modifier = Modifier.height(16.dp))
+                    } else {
+                        Text("Descargar")
+                    }
+                }
+            }
+
+            mensajeCursos?.let { msg ->
+                Text(
+                    text = msg,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (cursosRemotos.isEmpty()) {
+                Text(
+                    text = "No hay cursos descargados. Pulsa \"Descargar\" para traer los cursos del servidor.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(cursosRemotos) { curso ->
+                        TarjetaClase(
+                            nombre = curso.titulo,
+                            descripcion = "${curso.descripcion}\nÁrea: ${curso.areaTematica} | ${curso.fechaInicio} - ${curso.fechaTermino}\nEstado: ${curso.estado}",
+                            onClick = { /* solo lectura */ },
+                            colorContenedor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                         )
                     }
                 }

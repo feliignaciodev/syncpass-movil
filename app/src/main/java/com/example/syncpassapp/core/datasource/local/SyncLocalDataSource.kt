@@ -39,6 +39,8 @@ class SyncLocalDataSource @Inject constructor(
 
     fun participantes(): Flow<List<ParticipanteEntity>> = dao.getAllParticipantes()
 
+    fun proyectos(): Flow<List<ProyectoEntity>> = dao.getAllProyectos()
+
     // --- Registros offline ---
 
     suspend fun guardarAsistencia(asistencia: AsistenciaEntity) = dao.insertAsistencia(asistencia)
