@@ -55,8 +55,10 @@ fun TeacherHomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val cursosRemotos by cursosRemotosViewModel.cursos.collectAsState()
     val descargandoCursos by cursosRemotosViewModel.descargando.collectAsState()
+    val creandoCurso by cursosRemotosViewModel.creando.collectAsState()
     val mensajeCursos by cursosRemotosViewModel.mensaje.collectAsState()
     var showDialogCrearClase by remember { mutableStateOf(false) }
+    var showDialogCrearCursoRemoto by remember { mutableStateOf(false) }
     var cursoSeleccionado by remember { mutableStateOf<com.example.syncpassapp.core.database.local.entities.ProyectoEntity?>(null) }
 
     Scaffold(
@@ -178,14 +180,26 @@ fun TeacherHomeScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                OutlinedButton(
-                    onClick = { cursosRemotosViewModel.descargar() },
-                    enabled = !descargandoCursos
-                ) {
-                    if (descargandoCursos) {
-                        CircularProgressIndicator(modifier = Modifier.height(16.dp))
-                    } else {
-                        Text("Descargar")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = { showDialogCrearCursoRemoto = true },
+                        enabled = !creandoCurso
+                    ) {
+                        if (creandoCurso) {
+                            CircularProgressIndicator(modifier = Modifier.height(16.dp))
+                        } else {
+                            Text("Crear")
+                        }
+                    }
+                    OutlinedButton(
+                        onClick = { cursosRemotosViewModel.descargar() },
+                        enabled = !descargandoCursos
+                    ) {
+                        if (descargandoCursos) {
+                            CircularProgressIndicator(modifier = Modifier.height(16.dp))
+                        } else {
+                            Text("Descargar")
+                        }
                     }
                 }
             }
@@ -233,6 +247,24 @@ fun TeacherHomeScreen(
             DialogDetalleCurso(
                 curso = curso,
                 onDismiss = { cursoSeleccionado = null }
+            )
+        }
+
+        if (showDialogCrearCursoRemoto) {
+            DialogCrearCursoRemoto(
+                onDismiss = { showDialogCrearCursoRemoto = false },
+                onCrear = { titulo, descripcion, area, unidad, fechaInicio, fechaTermino, estado ->
+                    cursosRemotosViewModel.crearCurso(
+                        titulo = titulo,
+                        descripcion = descripcion,
+                        areaTematica = area,
+                        unidadVecinal = unidad,
+                        fechaInicio = fechaInicio,
+                        fechaTermino = fechaTermino,
+                        estado = estado
+                    )
+                    showDialogCrearCursoRemoto = false
+                }
             )
         }
 

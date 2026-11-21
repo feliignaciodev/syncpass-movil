@@ -10,7 +10,7 @@
 | RF-04 | Crear/editar clases y filtrarlas por estado (docente) | Implementado (local); el estado se elige al crear, la edición no lo cambia |
 | RF-15 | Descargar cursos del servidor (web → app) | Implementado (botón "Descargar" en Panel Docente) |
 | RF-16 | Visualizar cursos remotos con detalles (fechas, área, estado) | Implementado (sección "Cursos del servidor") |
-| RF-17 | Crear curso en servidor desde la app | Backlog (requiere rol ADMINISTRADOR) |
+| RF-17 | Crear curso en servidor desde la app | Implementado (botón "Crear" en "Cursos del servidor", requiere rol ADMINISTRADOR o COORDINADOR) |
 | RF-05 | Inscribir estudiantes en una clase | Parcial (local): sin pantalla propia; se inscribe al escanear el QR o al responder el cuestionario |
 | RF-06 | Escanear QR de clase (cámara) | Implementado |
 | RF-07 | Registrar asistencia presente/ausente | Implementado (local) |

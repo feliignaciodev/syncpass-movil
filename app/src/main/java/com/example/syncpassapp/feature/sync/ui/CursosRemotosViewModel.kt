@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.syncpassapp.core.database.local.entities.ProyectoEntity
 import com.example.syncpassapp.core.database.repository.SyncRepository
+import com.example.syncpassapp.core.datasource.remote.CursoRemoteDataSource
+import com.example.syncpassapp.core.network.remote.model.CursoCreateRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +20,8 @@ import kotlinx.coroutines.launch
  */
 @HiltViewModel
 class CursosRemotosViewModel @Inject constructor(
-    private val syncRepository: SyncRepository
+    private val syncRepository: SyncRepository,
+    private val cursoRemote: CursoRemoteDataSource
 ) : ViewModel() {
 
     val cursos: StateFlow<List<ProyectoEntity>> = syncRepository.obtenerCursosRemotos()
@@ -30,6 +33,9 @@ class CursosRemotosViewModel @Inject constructor(
 
     private val _descargando = MutableStateFlow(false)
     val descargando: StateFlow<Boolean> = _descargando
+
+    private val _creando = MutableStateFlow(false)
+    val creando: StateFlow<Boolean> = _creando
 
     private val _mensaje = MutableStateFlow<String?>(null)
     val mensaje: StateFlow<String?> = _mensaje
@@ -44,6 +50,41 @@ class CursosRemotosViewModel @Inject constructor(
                 "Cursos actualizados desde el servidor."
             } else {
                 result.exceptionOrNull()?.message ?: "No se pudieron descargar los cursos."
+            }
+        }
+    }
+
+    fun crearCurso(
+        titulo: String,
+        descripcion: String?,
+        areaTematica: String,
+        unidadVecinal: String,
+        fechaInicio: String,
+        fechaTermino: String,
+        estado: String = "PLANIFICADO"
+    ) {
+        viewModelScope.launch {
+            _creando.value = true
+            _mensaje.value = null
+            try {
+                cursoRemote.crear(
+                    CursoCreateRequest(
+                        titulo = titulo,
+                        descripcion = descripcion,
+                        areaTematica = areaTematica,
+                        unidadVecinal = unidadVecinal,
+                        fechaInicio = fechaInicio,
+                        fechaTermino = fechaTermino,
+                        estado = estado
+                    )
+                )
+                _mensaje.value = "Curso creado exitosamente."
+                // Refrescar la lista
+                syncRepository.descargarYGuardarCatalogo()
+            } catch (e: Exception) {
+                _mensaje.value = e.message ?: "No se pudo crear el curso."
+            } finally {
+                _creando.value = false
             }
         }
     }

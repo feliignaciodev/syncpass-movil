@@ -3,6 +3,7 @@
 import android.content.Context
 import com.example.syncpassapp.BuildConfig
 import com.example.syncpassapp.core.network.remote.AuthApi
+import com.example.syncpassapp.core.network.remote.CursoApi
 import com.example.syncpassapp.core.network.remote.EventoApi
 import com.example.syncpassapp.core.network.remote.SyncApi
 import com.example.syncpassapp.core.network.remote.TokenAuthenticator
@@ -72,6 +73,12 @@ object NetworkModule {
     @Singleton
     fun provideEventoApi(retrofit: Retrofit): EventoApi {
         return retrofit.create(EventoApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCursoApi(retrofit: Retrofit): CursoApi {
+        return retrofit.create(CursoApi::class.java)
     }
 
     @Provides
