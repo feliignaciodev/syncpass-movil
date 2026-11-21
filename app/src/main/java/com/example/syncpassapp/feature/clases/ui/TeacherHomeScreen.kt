@@ -16,11 +16,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -69,7 +69,7 @@ fun TeacherHomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(20.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
             Text(
                 text = "Panel Docente",
@@ -85,7 +85,7 @@ fun TeacherHomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Filtros de estado (Todos, En Curso, Finalizados)
+            // Filtros de estado
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -98,29 +98,37 @@ fun TeacherHomeScreen(
                 FilterChip(
                     selected = uiState.filtroEstado == "EN_CURSO",
                     onClick = { viewModel.cambiarFiltro("EN_CURSO") },
-                    label = { Text("🟢 En Curso") }
+                    label = { Text("En Curso") }
                 )
                 FilterChip(
                     selected = uiState.filtroEstado == "FINALIZADO",
                     onClick = { viewModel.cambiarFiltro("FINALIZADO") },
-                    label = { Text("🏁 Finalizados") }
+                    label = { Text("Finalizados") }
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Clases locales
             if (uiState.clases.isEmpty()) {
                 EstadoVacio(
                     texto = "No hay clases en esta categoría.",
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Button(onClick = { showDialogCrearClase = true }) {
                         Text("Crear Primera Clase")
                     }
                 }
             } else {
+                Text(
+                    text = "Mis clases",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     items(uiState.clases) { clase ->
                         val esEnCurso = clase.estado == "EN_CURSO"
@@ -135,7 +143,7 @@ fun TeacherHomeScreen(
                             },
                             encabezado = {
                                 Text(
-                                    text = if (esEnCurso) "🟢 En Curso" else "🏁 Finalizado",
+                                    text = if (esEnCurso) "En Curso" else "Finalizado",
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = if (esEnCurso) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
@@ -145,21 +153,30 @@ fun TeacherHomeScreen(
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Cursos descargados del servidor (creados en la web/admin)
-        Column(modifier = Modifier.fillMaxWidth()) {
+            // Cursos descargados del servidor
+            Text(
+                text = "Cursos del servidor",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Cursos del servidor",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    text = if (cursosRemotos.isEmpty()) {
+                        "Sin cursos descargados"
+                    } else {
+                        "${cursosRemotos.size} curso(s) disponible(s)"
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 OutlinedButton(
                     onClick = { cursosRemotosViewModel.descargar() },
@@ -174,6 +191,7 @@ fun TeacherHomeScreen(
             }
 
             mensajeCursos?.let { msg ->
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = msg,
                     style = MaterialTheme.typography.bodySmall,
@@ -185,16 +203,24 @@ fun TeacherHomeScreen(
 
             if (cursosRemotos.isEmpty()) {
                 Text(
-                    text = "No hay cursos descargados. Pulsa \"Descargar\" para traer los cursos del servidor.",
+                    text = "Pulsa \"Descargar\" para traer los cursos creados en la web.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     items(cursosRemotos) { curso ->
                         TarjetaClase(
                             nombre = curso.titulo,
-                            descripcion = "${curso.descripcion}\nÁrea: ${curso.areaTematica} | ${curso.fechaInicio} - ${curso.fechaTermino}\nEstado: ${curso.estado}",
+                            descripcion = buildString {
+                                append(curso.descripcion)
+                                append("\nÁrea: ${curso.areaTematica}")
+                                append(" | ${curso.fechaInicio} → ${curso.fechaTermino}")
+                                append("\nEstado: ${curso.estado}")
+                            },
                             onClick = { /* solo lectura */ },
                             colorContenedor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                         )
@@ -224,7 +250,7 @@ fun DialogCrearClase(
     var descripcion by remember { mutableStateOf("") }
     var estadoSeleccionado by remember { mutableStateOf("EN_CURSO") }
     var cuestionarioJson by remember {
-        mutableStateOf("{\"preguntas\":[\"¿Asististe a la sesión?\", \"¿Tienes alguna duda?\"]}")
+        mutableStateOf("{\"preguntas\":[\"¿Asististe a la clase?\", \"¿Tienes alguna duda?\"]}")
     }
 
     AlertDialog(
