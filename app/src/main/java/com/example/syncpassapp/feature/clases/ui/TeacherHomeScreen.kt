@@ -34,11 +34,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.syncpassapp.core.designsystem.components.EstadoVacio
 import com.example.syncpassapp.core.designsystem.components.TarjetaClase
+import com.example.syncpassapp.core.designsystem.components.SeccionHeader
+import com.example.syncpassapp.core.designsystem.theme.BackgroundMint
+import com.example.syncpassapp.core.designsystem.theme.PrimarySage
 import com.example.syncpassapp.feature.sync.ui.CursosRemotosViewModel
 
 
@@ -56,11 +60,12 @@ fun TeacherHomeScreen(
     var cursoSeleccionado by remember { mutableStateOf<com.example.syncpassapp.core.database.local.entities.ProyectoEntity?>(null) }
 
     Scaffold(
+        containerColor = BackgroundMint,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showDialogCrearClase = true },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                containerColor = PrimarySage,
+                contentColor = Color.White
             ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Crear nueva clase")
             }
@@ -121,11 +126,8 @@ fun TeacherHomeScreen(
                     }
                 }
             } else {
-                Text(
-                    text = "Mis clases",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                SeccionHeader(titulo = "Mis clases")
+
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -158,11 +160,8 @@ fun TeacherHomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Cursos descargados del servidor
-            Text(
-                text = "Cursos del servidor",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            SeccionHeader(titulo = "Cursos del servidor")
+
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(

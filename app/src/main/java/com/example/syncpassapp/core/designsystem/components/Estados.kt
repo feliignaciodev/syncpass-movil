@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import com.example.syncpassapp.core.designsystem.theme.PrimarySage
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +38,7 @@ fun EstadoVacio(
             imageVector = Icons.Default.Info,
             contentDescription = null,
             modifier = Modifier.size(56.dp),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+            tint = PrimarySage.copy(alpha = 0.6f)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
