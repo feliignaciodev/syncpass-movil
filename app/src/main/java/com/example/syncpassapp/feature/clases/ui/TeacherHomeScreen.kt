@@ -53,6 +53,7 @@ fun TeacherHomeScreen(
     val descargandoCursos by cursosRemotosViewModel.descargando.collectAsState()
     val mensajeCursos by cursosRemotosViewModel.mensaje.collectAsState()
     var showDialogCrearClase by remember { mutableStateOf(false) }
+    var cursoSeleccionado by remember { mutableStateOf<com.example.syncpassapp.core.database.local.entities.ProyectoEntity?>(null) }
 
     Scaffold(
         floatingActionButton = {
@@ -221,12 +222,19 @@ fun TeacherHomeScreen(
                                 append(" | ${curso.fechaInicio} → ${curso.fechaTermino}")
                                 append("\nEstado: ${curso.estado}")
                             },
-                            onClick = { /* solo lectura */ },
+                            onClick = { cursoSeleccionado = curso },
                             colorContenedor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                         )
                     }
                 }
             }
+        }
+
+        cursoSeleccionado?.let { curso ->
+            DialogDetalleCurso(
+                curso = curso,
+                onDismiss = { cursoSeleccionado = null }
+            )
         }
 
         if (showDialogCrearClase) {
