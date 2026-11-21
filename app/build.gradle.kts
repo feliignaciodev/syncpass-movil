@@ -36,10 +36,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "API_BASE_URL", "\"https://syncpass.duckdns.org/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://fullstack2-proyecto-kt.vercel.app/\"")
         }
         debug {
-            buildConfigField("String", "API_BASE_URL", "\"https://syncpass.duckdns.org/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://fullstack2-proyecto-kt.vercel.app/\"")
             // La cobertura de los tests JVM la mide el plugin `jacoco` de Gradle
             // (tareas jacocoTestReport y jacocoTestCoverageVerification, al final del archivo).
             enableUnitTestCoverage = false

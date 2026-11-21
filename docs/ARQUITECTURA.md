@@ -35,7 +35,8 @@ flowchart LR
 - **Estudiante, Docente, Voluntario y Administrador:** los cuatro perfiles de la rúbrica (ver §3.3 para su equivalencia con los grupos de Cognito).
 - **AWS Cognito:** gestiona credenciales y emite el access token con los grupos `ADMINISTRADOR`, `COORDINADOR`, `VOLUNTARIO`, `BENEFICIARIO`. **La app no llama a Cognito directamente:** el login pasa por el backend (`POST /api/auth/login`), que hace `InitiateAuth` y devuelve el token.
 - **AWS EC2 + Spring Boot:** API REST tras nginx (reverse proxy + HTTPS). **No hay AWS API Gateway desplegado** (es opcional en la rúbrica); nginx cumple el rol de proxy.
-- **Supabase (PostgreSQL):** base de datos relacional del backend (Session Pooler), configurada por variables de entorno.
+- **Vercel (proxy):** el front y la app móvil llaman a `https://fullstack2-proyecto-kt.vercel.app/api/*`, que Vercel reenvía a EC2. Así los clientes no dependen directamente de `syncpass.duckdns.org` (bloqueado por FortiGuard en redes corporativas).
+- **Supabase (PostgreSQL):** base de datos relacional del backend (Session Pooler, región us-east-2). ✅ Verificado.
 - **ntfy:** la app escucha por SSE un tópico derivado del email (`NtfyTopics`). Los mensajes se publican directo en ntfy (por ejemplo con `curl`); el backend SyncPass **no** publica en ntfy. Ver `NOTIFICACIONES_NTFY.md`.
 - **FCM:** el backend tiene un módulo de notificaciones (`/api/notifications`, envío por FCM), pero la app aún no integra Firebase, así que hoy no recibe esos push (backlog).
 
