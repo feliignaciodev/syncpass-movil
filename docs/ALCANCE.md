@@ -22,7 +22,7 @@
 | RF-11 | Sincronizar pendientes con botón explícito | Implementado (`SyncViewModel.sincronizarPendientes` + UI) |
 | RF-12 | Notificaciones push (ntfy/FCM) | Parcial |
 | RF-13 | Perfil y QR de estudiante | Implementado |
-| RF-14 | Geolocalización | **Backlog (no implementado)** |
+| RF-14 | Geolocalización con GPS real | **Backlog (no implementado)** |
 | RF-15 | Perfiles Estudiante, Docente, Voluntario y Administrador con navegación por rol | Implementado (`core/common/auth/Rol`, §6) |
 
 ## 2. Requerimientos No Funcionales (RNF)
@@ -79,10 +79,9 @@
 | Registro offline con catálogo remoto + botón/reintento automático | Implementado (no reemplaza el modelo local de clases; sin migración Room) |
 | Descarga de cursos del servidor (web → app) | Implementado (botón "Descargar" en Panel Docente) |
 | Visualización de cursos remotos con detalles | Implementado (título, descripción, área, fechas, estado) |
-| Crear curso en servidor desde la app | Backlog (requiere rol ADMINISTRADOR) |
-| Geolocalización con coordenada predeterminada | Implementado (Santiago; cálculo Haversine; estado VALIDO/FUERA_DE_RADIO) |
 | Crear curso en servidor desde la app | Implementado (botón "Crear", requiere rol ADMINISTRADOR o COORDINADOR) |
 | Vincular clase local con evento remoto | Implementado (dropdown en DialogCrearClase) |
+| Geolocalización con coordenada predeterminada | Implementado (Santiago; cálculo Haversine; estado VALIDO/FUERA_DE_RADIO) |
 | Geolocalización con GPS real | Backlog (requiere Play Services; no cached offline) |
 | C4 / alcance / mockups | Implementado (este directorio) |
 | Tests + JaCoCo ≥30 % | Implementado: 84 pruebas JVM, **50,0 % de líneas** (`./gradlew jacocoTestReport`) |
