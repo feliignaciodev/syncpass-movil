@@ -74,7 +74,7 @@
 | Clases (CRUD local) | Implementado |
 | Asistencia local | Implementado |
 | Cámara/QR | Implementado |
-| Notificaciones | Parcial |
+| Notificaciones (ntfy/FCM + SSE) | Implementado (recepción push + geolocalización con coordenada predeterminada) |
 | Offline sync (infra + botón) | Implementado |
 | Registro offline con catálogo remoto + botón/reintento automático | Implementado (no reemplaza el modelo local de clases; sin migración Room) |
 | Descarga de cursos del servidor (web → app) | Implementado (botón "Descargar" en Panel Docente) |
