@@ -146,11 +146,13 @@ flowchart TB
 3. Navegación por rol (§3.3) y `NotificacionesRepository.activarPara(email)`.
 4. Al reabrir la app, `SesionViewModel` lee el token guardado, revisa su expiración y entra directo al inicio que corresponde; si no hay sesión válida, vuelve al login.
 
-### 4.2 Offline-first (asistencias)
-1. Desde Perfil, descargar catálogo (`/api/sync/catalogo`) → `SyncRemoteDataSource` → `SyncRepository` mapea → `SyncLocalDataSource` guarda en Room eventos y participantes.
-2. Desde **"Registrar asistencia offline"**, elegir evento y participante del catálogo y guardar en `asistencias_offline` con UUID y `sincronizado = false`. Como no hay geolocalización se usa `estadoValidacion = SIN_UBICACION` y coordenadas nulas (valores permitidos por el backend).
-3. El usuario puede pulsar **"Sincronizar pendientes"**; además, `SyncPassApplication` reintenta automáticamente cuando `ConnectivityManager.NetworkCallback` detecta una red con internet validado.
-4. Se envían lotes a `/api/sync/asistencias` y `/api/sync/encuestas`. Los UUID aceptados y duplicados se marcan `sincronizado = true`; rechazados y errores de red permanecen pendientes para el siguiente intento.
+### 4.2 Offline-first (asistencias) — flujo unificado
+1. **Descargar catálogo** desde Perfil → Room con eventos, participantes, proyectos e inscripciones remotos.
+2. **Registrar asistencia offline** (Perfil → "Registrar asistencia offline"): elegir evento y participante del catálogo → guardar en `asistencias_offline` con UUID y `sincronizado = false`. Usa coordenada predeterminada (Santiago) y calcula distancia Haversine al evento para determinar `estadoValidacion` (VALIDO/FUERA_DE_RADIO).
+3. **Marcar presente en una clase local vinculada:** si la `ClaseEntity` tiene `remoteEventoId`, al marcar un estudiante presente en `SessionScreen`, también se registra en `asistencias_offline` con el ID del evento remoto y el participante como `W-<estudianteId>` (formato walk-in que el backend acepta y crea automáticamente).
+4. **Sincronización manual:** botón "Sincronizar pendientes" en Perfil → `SyncViewModel` → `SyncRepository.sincronizarPendientes()` → lotes a `/api/sync/asistencias` y `/api/sync/encuestas`.
+5. **Sincronización automática:** `SyncPassApplication` registra un `ConnectivityManager.NetworkCallback` y reintenta cuando vuelve la red (mientras el proceso está vivo).
+6. Se envían lotes a `/api/sync/asistencias` y `/api/sync/encuestas`. Los UUID aceptados y duplicados se marcan `sincronizado = true`; rechazados y errores de red permanecen pendientes para el siguiente reintento.
 
 ```mermaid
 sequenceDiagram
