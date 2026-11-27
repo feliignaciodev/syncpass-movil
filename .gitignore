@@ -10,6 +10,10 @@
 .DS_Store
 /build
 /captures
+
+# Keystore de firma (nunca subir)
+/app/keystore/*.jks
+/app/keystore/*.properties
 .externalNativeBuild
 .cxx
 local.properties
